@@ -4,13 +4,14 @@ import com.graphhopper.util.Helper;
 import okhttp3.MediaType;
 
 /**
+ *
  * @author Peter Karich
  */
 public class GraphHopperMatrixWeb {
 
-    static final String SERVICE_URL = "service_url";
+    public static final String SERVICE_URL = "service_url";
     public static final String KEY = "key";
-    static final MediaType MT_JSON = MediaType.parse("application/json; charset=utf-8");
+    public static final MediaType MT_JSON = MediaType.parse("application/json; charset=utf-8");
     private final GHMatrixAbstractRequester requester;
     private String key;
 
@@ -36,11 +37,10 @@ public class GraphHopperMatrixWeb {
     }
 
     public MatrixResponse route(GHMRequest request) {
-        if (!Helper.isEmpty(key))
+        if (!Helper.isEmpty(key)) {
             request.getHints().put(KEY, key);
-        if (!request.getPathDetails().isEmpty())
-            throw new IllegalArgumentException("Path details are not supported for the Matrix API");
-        request.compactPointHints();
+        }
+
         return requester.route(request);
     }
 }

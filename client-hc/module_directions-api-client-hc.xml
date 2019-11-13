@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_directions-api-client-hc" default="compile.module.directions-api-client-hc">
+  <dirname property="module.directions-api-client-hc.basedir" file="${ant.file.module_directions-api-client-hc}"/>
+  
+  <property name="module.jdk.home.directions-api-client-hc" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.directions-api-client-hc" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.directions-api-client-hc" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.directions-api-client-hc" value="-encoding UTF-8 -source 8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="directions-api-client-hc.output.dir" value="${module.directions-api-client-hc.basedir}/target/classes"/>
+  <property name="directions-api-client-hc.testoutput.dir" value="${module.directions-api-client-hc.basedir}/target/test-classes"/>
+  
+  <path id="directions-api-client-hc.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="directions-api-client-hc.module.production.classpath">
+    <path refid="${module.jdk.classpath.directions-api-client-hc}"/>
+    <pathelement location="${graphhopper-web-api.output.dir}"/>
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath"/>
+    <path refid="library.maven:_com.graphhopper.external:jackson-datatype-jts:0.12-2.5-1.classpath"/>
+    <path refid="library.maven:_com.squareup.okhttp3:okhttp:3.8.0.classpath"/>
+    <path refid="library.maven:_com.squareup.okio:okio:1.13.0.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+  </path>
+  
+  <path id="directions-api-client-hc.runtime.production.module.classpath">
+    <pathelement location="${directions-api-client-hc.output.dir}"/>
+    <path refid="graphhopper-web-api.runtime.production.module.classpath"/>
+    <path refid="graphhopper-api.runtime.production.module.classpath"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath"/>
+    <path refid="library.maven:_com.graphhopper.external:jackson-datatype-jts:0.12-2.5-1.classpath"/>
+    <path refid="library.maven:_com.squareup.okhttp3:okhttp:3.8.0.classpath"/>
+    <path refid="library.maven:_com.squareup.okio:okio:1.13.0.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+  </path>
+  
+  <path id="directions-api-client-hc.module.classpath">
+    <path refid="${module.jdk.classpath.directions-api-client-hc}"/>
+    <pathelement location="${directions-api-client-hc.output.dir}"/>
+    <pathelement location="${graphhopper-web-api.testoutput.dir}"/>
+    <pathelement location="${graphhopper-web-api.output.dir}"/>
+    <pathelement location="${graphhopper-api.testoutput.dir}"/>
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath"/>
+    <path refid="library.maven:_com.graphhopper.external:jackson-datatype-jts:0.12-2.5-1.classpath"/>
+    <path refid="library.maven:_com.squareup.okhttp3:okhttp:3.8.0.classpath"/>
+    <path refid="library.maven:_com.squareup.okio:okio:1.13.0.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-log4j12:1.7.25.classpath"/>
+    <path refid="library.maven:_log4j:log4j:1.2.17.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+  </path>
+  
+  <path id="directions-api-client-hc.runtime.module.classpath">
+    <pathelement location="${directions-api-client-hc.testoutput.dir}"/>
+    <pathelement location="${directions-api-client-hc.output.dir}"/>
+    <path refid="graphhopper-web-api.runtime.module.classpath"/>
+    <path refid="graphhopper-api.runtime.module.classpath"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath"/>
+    <path refid="library.maven:_com.graphhopper.external:jackson-datatype-jts:0.12-2.5-1.classpath"/>
+    <path refid="library.maven:_com.squareup.okhttp3:okhttp:3.8.0.classpath"/>
+    <path refid="library.maven:_com.squareup.okio:okio:1.13.0.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-log4j12:1.7.25.classpath"/>
+    <path refid="library.maven:_log4j:log4j:1.2.17.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.directions-api-client-hc">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.directions-api-client-hc">
+    <patternset refid="excluded.from.module.directions-api-client-hc"/>
+  </patternset>
+  
+  <path id="directions-api-client-hc.module.sourcepath">
+    <dirset dir="${module.directions-api-client-hc.basedir}">
+      <include name="src/main/java"/>
+    </dirset>
+  </path>
+  
+  <path id="directions-api-client-hc.module.test.sourcepath">
+    <dirset dir="${module.directions-api-client-hc.basedir}">
+      <include name="src/test/java"/>
+      <include name="src/test/resources"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.directions-api-client-hc" depends="compile.module.directions-api-client-hc.production,compile.module.directions-api-client-hc.tests" description="Compile module directions-api-client-hc"/>
+  
+  <target name="compile.module.directions-api-client-hc.production" depends="register.custom.compilers,compile.module.graphhopper-web-api,compile.module.graphhopper-api" description="Compile module directions-api-client-hc; production classes">
+    <mkdir dir="${directions-api-client-hc.output.dir}"/>
+    <javac2 destdir="${directions-api-client-hc.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.directions-api-client-hc}/javac">
+      <compilerarg line="${compiler.args.directions-api-client-hc}"/>
+      <bootclasspath refid="directions-api-client-hc.module.bootclasspath"/>
+      <classpath refid="directions-api-client-hc.module.production.classpath"/>
+      <src refid="directions-api-client-hc.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.directions-api-client-hc"/>
+    </javac2>
+    
+    <copy todir="${directions-api-client-hc.output.dir}">
+      <fileset dir="${module.directions-api-client-hc.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.directions-api-client-hc.tests" depends="register.custom.compilers,compile.module.directions-api-client-hc.production" description="compile module directions-api-client-hc; test classes" unless="skip.tests">
+    <mkdir dir="${directions-api-client-hc.testoutput.dir}"/>
+    <javac2 destdir="${directions-api-client-hc.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.directions-api-client-hc}/javac">
+      <compilerarg line="${compiler.args.directions-api-client-hc}"/>
+      <bootclasspath refid="directions-api-client-hc.module.bootclasspath"/>
+      <classpath refid="directions-api-client-hc.module.classpath"/>
+      <src refid="directions-api-client-hc.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.directions-api-client-hc"/>
+    </javac2>
+    
+    <copy todir="${directions-api-client-hc.testoutput.dir}">
+      <fileset dir="${module.directions-api-client-hc.basedir}/src/test/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.directions-api-client-hc.basedir}/src/test/resources">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.directions-api-client-hc" description="cleanup module">
+    <delete dir="${directions-api-client-hc.output.dir}"/>
+    <delete dir="${directions-api-client-hc.testoutput.dir}"/>
+  </target>
+</project>

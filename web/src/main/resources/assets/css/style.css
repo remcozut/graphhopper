@@ -27,12 +27,6 @@ body {
     padding-right: 5px;
 }
 
-#info ul {
-   margin-left:5px;
-   padding-left:5px;
-   list-style-type: none;
-}
-
 .route_results {
     max-height: 40%;
 }
@@ -266,7 +260,7 @@ td.instr_distance {
 }
 td img.pic {
     max-height: 24px;
-    max-width: 16px;
+    max-width: 24px;
 }
 
 .vehicle-btn {

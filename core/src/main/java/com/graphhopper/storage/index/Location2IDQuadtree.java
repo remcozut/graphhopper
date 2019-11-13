@@ -337,11 +337,6 @@ class Location2IDQuadtree implements LocationIndex {
         return res;
     }
 
-    @Override
-    public void query(BBox queryBBox, Visitor function) {
-        throw new IllegalArgumentException("not implemented");
-    }
-
     public void goFurtherHook(int n) {
     }
 

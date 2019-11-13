@@ -15,16 +15,17 @@ Use it e.g. just via `graphHopper.setEncodingManager(new EncodingManager(myEncod
 
 ## Different forward and backward weights?
 
-With 0.12 this is now simple. Specify speedTwoDirections = true in the constructor and overwrite handleSpeed:
+If you need to support two different speed values for one street (one edge) you need to create
+a separate EncodedDoubleValue instance (reverseSpeedEncoder) managing the reverse speed, 
+see Bike2WeightFlagEncoder for an example. You'll have to overwrite the following methods:
 
-```java
-protected void handleSpeed(IntsRef edgeFlags, ReaderWay way, double speed) {
-        speedEncoder.setDecimal(true, edgeFlags, speed);
-        super.handleSpeed(edgeFlags, way, speed);
-}
-```
-
-See Bike2WeightFlagEncoder for an example that uses different weights: slower speeds uphill than downhill.
+ * setReverseSpeed, getReverseSpeed to use the reverseSpeedEncoder
+ * handleSpeed, to handle oneway tags correctly
+ * flagsDefault 
+ * setProperties
+ * reverseFlags
+ * setLowSpeed
+ * always set reverse speed explicitely, see #665
 
 ## Elevation
 
@@ -33,5 +34,6 @@ and call edge.fetchWayGeometry(3) or again, see Bike2WeightFlagEncoder.
 
 ## Add to the core
 
-If you want to include your FlagEncoder in GraphHopper and e.g. still want to use the config.yml
-you can use a subclass of DefaultFlagEncoderFactory and use the configuration object to change different properties.
+If you want to include your FlagEncoder in GraphHopper you have to add the creation in
+EncodingManager.parseEncoderString to let the EncodingManager pick the correct class when faced
+with the string. The convention is that encoder.toString is identical to the string.

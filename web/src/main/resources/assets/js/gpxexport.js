@@ -85,4 +85,10 @@ module.exports.addGpxExport = function (ghRequest) {
         e.preventDefault();
         $("#gpx_dialog").dialog('open');
     });
+
+    $('#export-navigation-link a').click(function (e) {
+        // no page reload
+        e.preventDefault();
+        window.open(ghRequest.createNavigationURL());
+    });
 };

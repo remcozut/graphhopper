@@ -73,14 +73,14 @@ public class Circle implements Shape {
     }
 
     @Override
-    public boolean intersects(Shape o) {
+    public boolean intersect(Shape o) {
         if (o instanceof Circle) {
-            return intersects((Circle) o);
+            return intersect((Circle) o);
         } else if (o instanceof BBox) {
-            return intersects((BBox) o);
+            return intersect((BBox) o);
         }
 
-        return o.intersects(this);
+        return o.intersect(this);
     }
 
     @Override
@@ -94,8 +94,8 @@ public class Circle implements Shape {
         throw new UnsupportedOperationException("unsupported shape");
     }
 
-    public boolean intersects(BBox b) {
-        // test top intersects
+    public boolean intersect(BBox b) {
+        // test top intersect
         if (lat > b.maxLat) {
             if (lon < b.minLon) {
                 return normDist(b.maxLat, b.minLon) <= normedDist;
@@ -106,7 +106,7 @@ public class Circle implements Shape {
             return b.maxLat - bbox.minLat > 0;
         }
 
-        // test bottom intersects
+        // test bottom intersect
         if (lat < b.minLat) {
             if (lon < b.minLon) {
                 return normDist(b.minLat, b.minLon) <= normedDist;
@@ -117,7 +117,7 @@ public class Circle implements Shape {
             return bbox.maxLat - b.minLat > 0;
         }
 
-        // test middle intersects
+        // test middle intersect
         if (lon < b.minLon) {
             return bbox.maxLon - b.minLon > 0;
         }
@@ -127,9 +127,9 @@ public class Circle implements Shape {
         return true;
     }
 
-    public boolean intersects(Circle c) {
+    public boolean intersect(Circle c) {
         // necessary to improve speed?
-        if (!getBounds().intersects(c.getBounds())) {
+        if (!getBounds().intersect(c.getBounds())) {
             return false;
         }
 

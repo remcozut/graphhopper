@@ -5,7 +5,7 @@ function round(val, precision) {
 }
 
 var GHInput = function (input) {
-    this.set(input);
+	this.set(input);
 };
 
 GHInput.isObject = function (value) {
@@ -61,6 +61,12 @@ GHInput.prototype.set = function (strOrObject) {
 GHInput.prototype.toString = function () {
     if (this.lat !== undefined && this.lng !== undefined)
         return this.lat + "," + this.lng;
+    return undefined;
+};
+
+GHInput.prototype.toStringRev = function () {
+    if (this.lat !== undefined && this.lng !== undefined)
+        return this.lng + "," + this.lat;
     return undefined;
 };
 

@@ -1,20 +1,3 @@
-/*
- *  Licensed to GraphHopper GmbH under one or more contributor
- *  license agreements. See the NOTICE file distributed with this work for
- *  additional information regarding copyright ownership.
- *
- *  GraphHopper GmbH licenses this file to you under the Apache License,
- *  Version 2.0 (the "License"); you may not use this file except in
- *  compliance with the License. You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
 package com.graphhopper.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,14 +20,14 @@ import static com.graphhopper.api.GraphHopperMatrixWeb.*;
  */
 public abstract class GHMatrixAbstractRequester {
 
-    static final String MATRIX_URL = "https://graphhopper.com/api/1/matrix";
+    private GraphHopperWeb web = new GraphHopperWeb();
     protected final ObjectMapper objectMapper;
-    protected final Set<String> ignoreSet = new HashSet<>();
+    protected final Set<String> ignoreSet = new HashSet<>(10);
     protected final String serviceUrl;
     private OkHttpClient downloader;
 
     public GHMatrixAbstractRequester() {
-        this(MATRIX_URL);
+        this("https://graphhopper.com/api/1/matrix");
     }
 
     public GHMatrixAbstractRequester(String serviceUrl) {
@@ -87,6 +70,17 @@ public abstract class GHMatrixAbstractRequester {
         }
     }
 
+    protected String postJson(String url, JsonNode data) throws IOException {
+        Request okRequest = new Request.Builder().url(url).post(RequestBody.create(MT_JSON, data.toString())).build();
+        ResponseBody body = null;
+        try {
+            body = downloader.newCall(okRequest).execute().body();
+            return body.string();
+        } finally {
+            Helper.close(body);
+        }
+    }
+
     protected JsonNode toJSON(String url, String str) {
         try {
             return objectMapper.readTree(str);
@@ -107,18 +101,11 @@ public abstract class GHMatrixAbstractRequester {
         }
     }
 
-    public void fillResponseFromJson(MatrixResponse matrixResponse, String responseAsString, boolean failFast) throws IOException {
-        fillResponseFromJson(matrixResponse, objectMapper.reader().readTree(responseAsString), failFast);
+    public void fillResponseFromJson(MatrixResponse matrixResponse, String responseAsString) throws IOException {
+        fillResponseFromJson(matrixResponse, objectMapper.reader().readTree(responseAsString));
     }
 
-    /**
-     * @param failFast If false weights/distances/times that are null are interpreted as disconnected points and are
-     *                 thus set to their respective maximum values. Furthermore, the indices of the disconnected points
-     *                 are added to {@link MatrixResponse#getDisconnectedPoints()} and the indices of the points that
-     *                 could not be found are added to {@link MatrixResponse#getInvalidFromPoints()} and/or
-     *                 {@link MatrixResponse#getInvalidToPoints()}.
-     */
-    protected void fillResponseFromJson(MatrixResponse matrixResponse, JsonNode solution, boolean failFast) {
+    protected void fillResponseFromJson(MatrixResponse matrixResponse, JsonNode solution) {
         final boolean readWeights = solution.has("weights");
         final boolean readDistances = solution.has("distances");
         final boolean readTimes = solution.has("times");
@@ -168,27 +155,15 @@ public abstract class GHMatrixAbstractRequester {
 
             for (int toIndex = 0; toIndex < toCount; toIndex++) {
                 if (readWeights) {
-                    if (weightsFromArray.get(toIndex).isNull() && !failFast) {
-                        weights[toIndex] = Double.MAX_VALUE;
-                    } else {
-                        weights[toIndex] = weightsFromArray.get(toIndex).asDouble();
-                    }
+                    weights[toIndex] = weightsFromArray.get(toIndex).asDouble();
                 }
 
                 if (readTimes) {
-                    if (timesFromArray.get(toIndex).isNull() && !failFast) {
-                        times[toIndex] = Long.MAX_VALUE;
-                    } else {
-                        times[toIndex] = timesFromArray.get(toIndex).asLong() * 1000;
-                    }
+                    times[toIndex] = timesFromArray.get(toIndex).asLong() * 1000;
                 }
 
                 if (readDistances) {
-                    if (distancesFromArray.get(toIndex).isNull() && !failFast) {
-                        distances[toIndex] = Integer.MAX_VALUE;
-                    } else {
-                        distances[toIndex] = (int) Math.round(distancesFromArray.get(toIndex).asDouble());
-                    }
+                    distances[toIndex] = (int) Math.round(distancesFromArray.get(toIndex).asDouble());
                 }
             }
 
@@ -204,43 +179,6 @@ public abstract class GHMatrixAbstractRequester {
                 matrixResponse.setDistanceRow(fromIndex, distances);
             }
         }
-        if (!failFast && solution.has("hints")) {
-            addProblems(matrixResponse, solution.get("hints"));
-        }
-    }
-
-    private void addProblems(MatrixResponse matrixResponse, JsonNode hints) {
-        for (JsonNode hint : hints) {
-            if (hint.has("point_pairs")) {
-                matrixResponse.setDisconnectedPoints(readDisconnectedPoints(hint.get("point_pairs")));
-            }
-            if (hint.has("invalid_from_points")) {
-                matrixResponse.setInvalidFromPoints(readInvalidPoints(hint.get("invalid_from_points")));
-                matrixResponse.setInvalidToPoints(readInvalidPoints(hint.get("invalid_to_points")));
-            }
-        }
-    }
-
-    private List<MatrixResponse.PointPair> readDisconnectedPoints(JsonNode pointPairsArray) {
-        List<MatrixResponse.PointPair> disconnectedPoints = new ArrayList<>(pointPairsArray.size());
-        for (int i = 0; i < pointPairsArray.size(); i++) {
-            if (pointPairsArray.get(i).size() != 2) {
-                throw new IllegalArgumentException("all point_pairs are expected to contain two elements");
-            }
-            disconnectedPoints.add(new MatrixResponse.PointPair(
-                    pointPairsArray.get(i).get(0).asInt(),
-                    pointPairsArray.get(i).get(1).asInt()
-            ));
-        }
-        return disconnectedPoints;
-    }
-
-    private List<Integer> readInvalidPoints(JsonNode pointsArray) {
-        List<Integer> result = new ArrayList<>(pointsArray.size());
-        for (int i = 0; i < pointsArray.size(); i++) {
-            result.add(pointsArray.get(i).asInt());
-        }
-        return result;
     }
 
     private static int checkArraySizes(String msg, int len, JsonNode... arrays) {
@@ -287,4 +225,7 @@ public abstract class GHMatrixAbstractRequester {
         }
     }
 
+    public List<Throwable> readErrors(JsonNode json) {
+        return web.readErrors(json);
+    }
 }

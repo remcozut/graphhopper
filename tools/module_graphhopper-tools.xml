@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_graphhopper-tools" default="compile.module.graphhopper-tools">
+  <dirname property="module.graphhopper-tools.basedir" file="${ant.file.module_graphhopper-tools}"/>
+  
+  <property name="module.jdk.home.graphhopper-tools" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.graphhopper-tools" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.graphhopper-tools" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.graphhopper-tools" value="-encoding UTF-8 -source 8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="graphhopper-tools.output.dir" value="${module.graphhopper-tools.basedir}/target/classes"/>
+  <property name="graphhopper-tools.testoutput.dir" value="${module.graphhopper-tools.basedir}/target/test-classes"/>
+  
+  <path id="graphhopper-tools.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="graphhopper-tools.module.production.classpath">
+    <path refid="${module.jdk.classpath.graphhopper-tools}"/>
+    <pathelement location="${graphhopper-reader-osm.output.dir}"/>
+    <pathelement location="${graphhopper-core.output.dir}"/>
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.1.classpath"/>
+    <path refid="library.maven:_org.openstreetmap.osmosis:osmosis-osm-binary:0.46.classpath"/>
+    <path refid="library.maven:_com.google.protobuf:protobuf-java:3.4.0.classpath"/>
+    <path refid="library.maven:_org.apache.commons:commons-compress:1.15.classpath"/>
+    <path refid="library.maven:_org.objenesis:objenesis:2.6.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+  </path>
+  
+  <path id="graphhopper-tools.runtime.production.module.classpath">
+    <pathelement location="${graphhopper-tools.output.dir}"/>
+    <path refid="graphhopper-reader-osm.runtime.production.module.classpath"/>
+    <path refid="graphhopper-core.runtime.production.module.classpath"/>
+    <path refid="graphhopper-api.runtime.production.module.classpath"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.1.classpath"/>
+    <path refid="library.maven:_org.openstreetmap.osmosis:osmosis-osm-binary:0.46.classpath"/>
+    <path refid="library.maven:_com.google.protobuf:protobuf-java:3.4.0.classpath"/>
+    <path refid="library.maven:_org.apache.commons:commons-compress:1.15.classpath"/>
+    <path refid="library.maven:_org.objenesis:objenesis:2.6.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-log4j12:1.7.25.classpath"/>
+    <path refid="library.maven:_log4j:log4j:1.2.17.classpath"/>
+  </path>
+  
+  <path id="graphhopper-tools.module.classpath">
+    <path refid="${module.jdk.classpath.graphhopper-tools}"/>
+    <pathelement location="${graphhopper-tools.output.dir}"/>
+    <pathelement location="${graphhopper-reader-osm.testoutput.dir}"/>
+    <pathelement location="${graphhopper-reader-osm.output.dir}"/>
+    <pathelement location="${graphhopper-core.testoutput.dir}"/>
+    <pathelement location="${graphhopper-core.output.dir}"/>
+    <pathelement location="${graphhopper-api.testoutput.dir}"/>
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.1.classpath"/>
+    <path refid="library.maven:_org.openstreetmap.osmosis:osmosis-osm-binary:0.46.classpath"/>
+    <path refid="library.maven:_com.google.protobuf:protobuf-java:3.4.0.classpath"/>
+    <path refid="library.maven:_org.apache.commons:commons-compress:1.15.classpath"/>
+    <path refid="library.maven:_org.objenesis:objenesis:2.6.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-log4j12:1.7.25.classpath"/>
+    <path refid="library.maven:_log4j:log4j:1.2.17.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+  </path>
+  
+  <path id="graphhopper-tools.runtime.module.classpath">
+    <pathelement location="${graphhopper-tools.testoutput.dir}"/>
+    <pathelement location="${graphhopper-tools.output.dir}"/>
+    <path refid="graphhopper-reader-osm.runtime.module.classpath"/>
+    <path refid="graphhopper-core.runtime.module.classpath"/>
+    <path refid="graphhopper-api.runtime.module.classpath"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.1.classpath"/>
+    <path refid="library.maven:_org.openstreetmap.osmosis:osmosis-osm-binary:0.46.classpath"/>
+    <path refid="library.maven:_com.google.protobuf:protobuf-java:3.4.0.classpath"/>
+    <path refid="library.maven:_org.apache.commons:commons-compress:1.15.classpath"/>
+    <path refid="library.maven:_org.objenesis:objenesis:2.6.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-log4j12:1.7.25.classpath"/>
+    <path refid="library.maven:_log4j:log4j:1.2.17.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.graphhopper-tools">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.graphhopper-tools">
+    <patternset refid="excluded.from.module.graphhopper-tools"/>
+  </patternset>
+  
+  <path id="graphhopper-tools.module.sourcepath">
+    <dirset dir="${module.graphhopper-tools.basedir}">
+      <include name="src/main/java"/>
+      <include name="src/main/resources"/>
+    </dirset>
+  </path>
+  
+  <path id="graphhopper-tools.module.test.sourcepath">
+    <dirset dir="${module.graphhopper-tools.basedir}">
+      <include name="src/test/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.graphhopper-tools" depends="compile.module.graphhopper-tools.production,compile.module.graphhopper-tools.tests" description="Compile module graphhopper-tools"/>
+  
+  <target name="compile.module.graphhopper-tools.production" depends="register.custom.compilers,compile.module.graphhopper-reader-osm,compile.module.graphhopper-core,compile.module.graphhopper-api" description="Compile module graphhopper-tools; production classes">
+    <mkdir dir="${graphhopper-tools.output.dir}"/>
+    <javac2 destdir="${graphhopper-tools.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.graphhopper-tools}/javac">
+      <compilerarg line="${compiler.args.graphhopper-tools}"/>
+      <bootclasspath refid="graphhopper-tools.module.bootclasspath"/>
+      <classpath refid="graphhopper-tools.module.production.classpath"/>
+      <src refid="graphhopper-tools.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.graphhopper-tools"/>
+    </javac2>
+    
+    <copy todir="${graphhopper-tools.output.dir}">
+      <fileset dir="${module.graphhopper-tools.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.graphhopper-tools.basedir}/src/main/resources">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.graphhopper-tools.tests" depends="register.custom.compilers,compile.module.graphhopper-tools.production" description="compile module graphhopper-tools; test classes" unless="skip.tests">
+    <mkdir dir="${graphhopper-tools.testoutput.dir}"/>
+    <javac2 destdir="${graphhopper-tools.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.graphhopper-tools}/javac">
+      <compilerarg line="${compiler.args.graphhopper-tools}"/>
+      <bootclasspath refid="graphhopper-tools.module.bootclasspath"/>
+      <classpath refid="graphhopper-tools.module.classpath"/>
+      <src refid="graphhopper-tools.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.graphhopper-tools"/>
+    </javac2>
+    
+    <copy todir="${graphhopper-tools.testoutput.dir}">
+      <fileset dir="${module.graphhopper-tools.basedir}/src/test/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.graphhopper-tools" description="cleanup module">
+    <delete dir="${graphhopper-tools.output.dir}"/>
+    <delete dir="${graphhopper-tools.testoutput.dir}"/>
+  </target>
+</project>

@@ -27,7 +27,7 @@ public interface Shape {
     /**
      * @return true if edges or areas of this and the specified shapes overlap
      */
-    boolean intersects(Shape o);
+    boolean intersect(Shape o);
 
     /**
      * @return true only if lat and lon are inside (or on the edge) of this shape

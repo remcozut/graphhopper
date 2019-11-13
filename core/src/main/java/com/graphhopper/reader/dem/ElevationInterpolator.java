@@ -25,6 +25,7 @@ import static com.graphhopper.util.Helper.round2;
  * Elevation interpolator calculates elevation for the given lat/lon coordinates
  * based on lat/lon/ele coordinates of the given points.
  * <p>
+ * <p>
  * In case of two points, elevation is calculated using linear interpolation
  * (see
  * {@link #calculateElevationBasedOnTwoPoints(double, double, double, double, double, double, double, double)}).

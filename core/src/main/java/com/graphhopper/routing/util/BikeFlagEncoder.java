@@ -20,6 +20,8 @@ package com.graphhopper.routing.util;
 import com.graphhopper.reader.ReaderWay;
 import com.graphhopper.util.PMap;
 
+import static com.graphhopper.routing.util.PriorityCode.*;
+
 /**
  * Specifies the settings for cycletouring/trekking
  *
@@ -36,33 +38,25 @@ public class BikeFlagEncoder extends BikeCommonFlagEncoder {
     }
 
     public BikeFlagEncoder(PMap properties) {
-        this(properties.getInt("speed_bits", 4),
-                properties.getInt("speed_factor", 2),
+        this((int) properties.getLong("speed_bits", 4),
+                properties.getLong("speed_factor", 2),
                 properties.getBool("turn_costs", false) ? 1 : 0);
+        this.properties = properties;
         this.setBlockFords(properties.getBool("block_fords", true));
     }
 
     public BikeFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts) {
         super(speedBits, speedFactor, maxTurnCosts);
-        addPushingSection("path");
-        addPushingSection("footway");
-        addPushingSection("pedestrian");
-        addPushingSection("steps");
-        addPushingSection("platform");
 
-        avoidHighwayTags.add("trunk");
-        avoidHighwayTags.add("trunk_link");
-        avoidHighwayTags.add("primary");
-        avoidHighwayTags.add("primary_link");
-        avoidHighwayTags.add("secondary");
-        avoidHighwayTags.add("secondary_link");
-
-        // preferHighwayTags.add("road");
-        preferHighwayTags.add("service");
+        preferHighwayTags.add("road");
+        preferHighwayTags.add("secondary");
+        preferHighwayTags.add("secondary_link");
         preferHighwayTags.add("tertiary");
         preferHighwayTags.add("tertiary_link");
-        preferHighwayTags.add("residential");
-        preferHighwayTags.add("unclassified");
+//        preferHighwayTags.add("residential");
+
+
+//        surfaceSpeeds.clear();
 
         absoluteBarriers.add("kissing_gate");
         setSpecificClassBicycle("touring");
@@ -73,6 +67,11 @@ public class BikeFlagEncoder extends BikeCommonFlagEncoder {
     @Override
     public int getVersion() {
         return 2;
+    }
+
+    @Override
+    public boolean hasNodeNameReferences() {
+        return false;
     }
 
     @Override

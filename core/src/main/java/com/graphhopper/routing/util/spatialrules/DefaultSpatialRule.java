@@ -17,8 +17,6 @@
  */
 package com.graphhopper.routing.util.spatialrules;
 
-import com.graphhopper.routing.profiles.RoadAccess;
-
 /**
  * Default implementation for the SpatialRule that contains the current default values
  */
@@ -51,7 +49,7 @@ public class DefaultSpatialRule extends AbstractSpatialRule {
     }
 
     @Override
-    public RoadAccess getAccess(String highwayTag, TransportationMode transportationMode, RoadAccess _default) {
+    public Access getAccess(String highwayTag, TransportationMode transportationMode, Access _default) {
         // As defined in: https://wiki.openstreetmap.org/wiki/OSM_tags_for_routing/Access-Restriction
         // We tried to find generally forbidden tags
         if (transportationMode == TransportationMode.MOTOR_VEHICLE) {
@@ -61,7 +59,7 @@ public class DefaultSpatialRule extends AbstractSpatialRule {
                 case "cycleway":
                 case "footway":
                 case "pedestrian":
-                    return RoadAccess.NO;
+                    return Access.NO;
                 default:
                     return _default;
             }

@@ -24,7 +24,7 @@ public class ViaInstruction extends Instruction {
     private int viaPosition = -1;
 
     public ViaInstruction(String name, InstructionAnnotation ia, PointList pl) {
-        super(REACHED_VIA, name, ia, pl);
+        super(REACHED_VIA, TurnType.ARRIVE, name, ia, pl);
     }
 
     public ViaInstruction(Instruction instr) {

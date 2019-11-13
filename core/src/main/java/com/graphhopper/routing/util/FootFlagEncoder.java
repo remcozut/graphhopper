@@ -17,19 +17,17 @@
  */
 package com.graphhopper.routing.util;
 
-import com.graphhopper.reader.OSMTurnRelation;
 import com.graphhopper.reader.ReaderRelation;
 import com.graphhopper.reader.ReaderWay;
 import com.graphhopper.routing.profiles.DecimalEncodedValue;
 import com.graphhopper.routing.profiles.EncodedValue;
-import com.graphhopper.routing.profiles.UnsignedDecimalEncodedValue;
+import com.graphhopper.routing.profiles.FactorizedDecimalEncodedValue;
 import com.graphhopper.routing.weighting.PriorityWeighting;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.PMap;
 
 import java.util.*;
 
-import static com.graphhopper.routing.util.EncodingManager.getKey;
 import static com.graphhopper.routing.util.PriorityCode.*;
 
 /**
@@ -66,6 +64,7 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
     public FootFlagEncoder(PMap properties) {
         this((int) properties.getLong("speedBits", 4),
                 properties.getDouble("speedFactor", 1));
+        this.properties = properties;
         this.setBlockFords(properties.getBool("block_fords", true));
     }
 
@@ -74,7 +73,7 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
     }
 
     public FootFlagEncoder(int speedBits, double speedFactor) {
-        super(speedBits, speedFactor, 0);
+        super(speedBits, speedFactor, 0, 1);
         restrictions.addAll(Arrays.asList("foot", "access"));
         restrictedValues.add("private");
         restrictedValues.add("no");
@@ -110,7 +109,6 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
         safeHighwayTags.add("track");
         safeHighwayTags.add("residential");
         safeHighwayTags.add("service");
-        safeHighwayTags.add("platform");
 
         avoidHighwayTags.add("trunk");
         avoidHighwayTags.add("trunk_link");
@@ -147,12 +145,17 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
     }
 
     @Override
+    public boolean hasNodeNameReferences() {
+        return false;
+    }
+
+    @Override
     public void createEncodedValues(List<EncodedValue> registerNewEncodedValue, String prefix, int index) {
         // first two bits are reserved for route handling in superclass
         super.createEncodedValues(registerNewEncodedValue, prefix, index);
         // larger value required - ferries are faster than pedestrians
-        registerNewEncodedValue.add(avgSpeedEnc = new UnsignedDecimalEncodedValue(getKey(prefix, "average_speed"), speedBits, speedFactor, false));
-        registerNewEncodedValue.add(priorityWayEncoder = new UnsignedDecimalEncodedValue(getKey(prefix, "priority"), 3, PriorityCode.getFactor(1), false));
+        registerNewEncodedValue.add(speedEncoder = new FactorizedDecimalEncodedValue(prefix + "average_speed", speedBits, speedFactor, false));
+        registerNewEncodedValue.add(priorityWayEncoder = new FactorizedDecimalEncodedValue(prefix + "priority", 3, PriorityCode.getFactor(1), false));
     }
 
     @Override
@@ -194,11 +197,6 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
     @Override
     public long getTurnFlags(boolean restricted, double costs) {
         return 0;
-    }
-
-    @Override
-    public boolean acceptsTurnRelation(OSMTurnRelation relation) {
-        return false;
     }
 
     /**
@@ -295,14 +293,11 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
             String sacScale = way.getTag("sac_scale");
             if (sacScale != null) {
                 if ("hiking".equals(sacScale))
-                    avgSpeedEnc.setDecimal(false, edgeFlags, MEAN_SPEED);
+                    speedEncoder.setDecimal(false, edgeFlags, MEAN_SPEED);
                 else
-                    avgSpeedEnc.setDecimal(false, edgeFlags, SLOW_SPEED);
+                    speedEncoder.setDecimal(false, edgeFlags, SLOW_SPEED);
             } else {
-                if (way.hasTag("highway", "steps"))
-                    avgSpeedEnc.setDecimal(false, edgeFlags, MEAN_SPEED - 2);
-                else
-                    avgSpeedEnc.setDecimal(false, edgeFlags, MEAN_SPEED);
+                speedEncoder.setDecimal(false, edgeFlags, MEAN_SPEED);
             }
             accessEnc.setBool(false, edgeFlags, true);
             accessEnc.setBool(true, edgeFlags, true);
@@ -369,6 +364,11 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
         return PriorityWeighting.class.isAssignableFrom(feature);
     }
 
+    @Override
+    public String toString() {
+        return "foot";
+    }
+
     /*
      * This method is a current hack, to allow ferries to be actually faster than our current storable maxSpeed.
      */
@@ -383,7 +383,8 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
     }
 
     @Override
-    public String toString() {
-        return "foot";
+    public int getWayType(IntsRef edgeFlags) {
+        return 0;
     }
+
 }

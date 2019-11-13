@@ -22,12 +22,14 @@ import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopperAPI;
 import com.graphhopper.MultiException;
 import com.graphhopper.http.WebHelper;
+import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.HintsMap;
 import com.graphhopper.util.Constants;
-import com.graphhopper.util.InstructionList;
+import com.graphhopper.util.Helper;
+import com.graphhopper.util.Parameters;
 import com.graphhopper.util.StopWatch;
-import com.graphhopper.util.gpx.GpxFromInstructions;
 import com.graphhopper.util.shapes.GHPoint;
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +44,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.graphhopper.util.Parameters.Details.PATH_DETAILS;
 import static com.graphhopper.util.Parameters.Routing.*;
 
 /**
@@ -78,20 +79,21 @@ public class RouteResource {
             @QueryParam(INSTRUCTIONS) @DefaultValue("true") boolean instructions,
             @QueryParam(CALC_POINTS) @DefaultValue("true") boolean calcPoints,
             @QueryParam("elevation") @DefaultValue("false") boolean enableElevation,
+            @QueryParam("filtering") @DefaultValue("true") boolean enableFiltering,
+            @QueryParam(VERSIONCODE) @DefaultValue("-1") int versionCode,
             @QueryParam("points_encoded") @DefaultValue("true") boolean pointsEncoded,
-            @QueryParam("vehicle") @DefaultValue("car") String vehicleStr,
+            @QueryParam("vehicle") @DefaultValue("bike") String vehicleStr,
+            @QueryParam("profile") @DefaultValue("") String profileStr,
             @QueryParam("weighting") @DefaultValue("fastest") String weighting,
             @QueryParam("algorithm") @DefaultValue("") String algoStr,
             @QueryParam("locale") @DefaultValue("en") String localeStr,
-            @QueryParam(POINT_HINT) List<String> pointHints,
-            @QueryParam(CURBSIDE) List<String> curbsides,
-            @QueryParam(SNAP_PREVENTION) List<String> snapPreventions,
-            @QueryParam(PATH_DETAILS) List<String> pathDetails,
+            @QueryParam(Parameters.Routing.POINT_HINT) List<String> pointHints,
+            @QueryParam(Parameters.DETAILS.PATH_DETAILS) List<String> pathDetails,
             @QueryParam("heading") List<Double> favoredHeadings,
             @QueryParam("gpx.route") @DefaultValue("true") boolean withRoute /* default to false for the route part in next API version, see #437 */,
             @QueryParam("gpx.track") @DefaultValue("true") boolean withTrack,
             @QueryParam("gpx.waypoints") @DefaultValue("false") boolean withWayPoints,
-            @QueryParam("gpx.trackname") @DefaultValue("GraphHopper Track") String trackName,
+            @QueryParam("gpx.trackname") @DefaultValue("Velomatic Track") String trackName,
             @QueryParam("gpx.millis") String timeString) {
         boolean writeGPX = "gpx".equalsIgnoreCase(type);
         instructions = writeGPX || instructions;
@@ -106,9 +108,7 @@ public class RouteResource {
             throw new IllegalArgumentException("The number of 'heading' parameters must be <= 1 "
                     + "or equal to the number of points (" + requestPoints.size() + ")");
         if (pointHints.size() > 0 && pointHints.size() != requestPoints.size())
-            throw new IllegalArgumentException("If you pass " + POINT_HINT + ", you need to pass exactly one hint for every point, empty hints will be ignored");
-        if (curbsides.size() > 0 && curbsides.size() != requestPoints.size())
-            throw new IllegalArgumentException("If you pass " + CURBSIDE + ", you need to pass exactly one curbside for every point, empty curbsides will be ignored");
+            throw new IllegalArgumentException("If you pass " + POINT_HINT + ", you need to pass a hint for every point, empty hints will be ignored");
 
         GHRequest request;
         if (favoredHeadings.size() > 0) {
@@ -124,16 +124,23 @@ public class RouteResource {
             request = new GHRequest(requestPoints);
         }
 
+        if (!profileStr.isEmpty()) {
+            vehicleStr = fromProfile(profileStr);
+        }
+
+        if (versionCode == -1) {
+            versionCode = Constants.VERSIONCODE;
+        }
+
+
         initHints(request.getHints(), uriInfo.getQueryParameters());
-        translateTurnCostsParamToEdgeBased(request, uriInfo.getQueryParameters());
-        enableEdgeBasedIfThereAreCurbsides(curbsides, request);
         request.setVehicle(vehicleStr).
                 setWeighting(weighting).
                 setAlgorithm(algoStr).
+                setFiltering(enableFiltering).
+                setVersionCode(versionCode).
                 setLocale(localeStr).
                 setPointHints(pointHints).
-                setCurbsides(curbsides).
-                setSnapPreventions(snapPreventions).
                 setPathDetails(pathDetails).
                 getHints().
                 put(CALC_POINTS, calcPoints).
@@ -142,6 +149,7 @@ public class RouteResource {
 
         GHResponse ghResponse = graphHopper.route(request);
 
+        // TODO: Request logging and timing should perhaps be done somewhere outside
         float took = sw.stop().getSeconds();
         String infoStr = httpReq.getRemoteAddr() + " " + httpReq.getLocale() + " " + httpReq.getHeader("User-Agent");
         String logStr = httpReq.getQueryString() + " " + infoStr + " " + requestPoints + ", took:"
@@ -168,73 +176,16 @@ public class RouteResource {
         }
     }
 
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/gpx+xml"})
-    public Response doPost(GHRequest request, @Context HttpServletRequest httpReq) {
-        if (request == null)
-            throw new IllegalArgumentException("Empty request");
-
-        StopWatch sw = new StopWatch().start();
-        GHResponse ghResponse = graphHopper.route(request);
-
-        boolean instructions = request.getHints().getBool(INSTRUCTIONS, true);
-        boolean writeGPX = "gpx".equalsIgnoreCase(request.getHints().get("type", "json"));
-        instructions = writeGPX || instructions;
-        boolean enableElevation = request.getHints().getBool("elevation", false);
-        boolean calcPoints = request.getHints().getBool(CALC_POINTS, true);
-        boolean pointsEncoded = request.getHints().getBool("points_encoded", true);
-
-        /* default to false for the route part in next API version, see #437 */
-        boolean withRoute = request.getHints().getBool("gpx.route", true);
-        boolean withTrack = request.getHints().getBool("gpx.track", true);
-        boolean withWayPoints = request.getHints().getBool("gpx.waypoints", false);
-        String trackName = request.getHints().get("gpx.trackname", "GraphHopper Track");
-        String timeString = request.getHints().get("gpx.millis", "");
-        float took = sw.stop().getSeconds();
-        String infoStr = httpReq.getRemoteAddr() + " " + httpReq.getLocale() + " " + httpReq.getHeader("User-Agent");
-        String logStr = httpReq.getQueryString() + " " + infoStr + " " + request.getPoints().size() + ", took:"
-                + took + ", " + request.getAlgorithm() + ", " + request.getWeighting() + ", " + request.getVehicle();
-
-        if (ghResponse.hasErrors()) {
-            logger.error(logStr + ", errors:" + ghResponse.getErrors());
-            throw new MultiException(ghResponse.getErrors());
-        } else {
-            logger.info(logStr + ", alternatives: " + ghResponse.getAll().size()
-                    + ", distance0: " + ghResponse.getBest().getDistance()
-                    + ", weight0: " + ghResponse.getBest().getRouteWeight()
-                    + ", time0: " + Math.round(ghResponse.getBest().getTime() / 60000f) + "min"
-                    + ", points0: " + ghResponse.getBest().getPoints().getSize()
-                    + ", debugInfo: " + ghResponse.getDebugInfo());
-            return writeGPX ?
-                    gpxSuccessResponseBuilder(ghResponse, timeString, trackName, enableElevation, withRoute, withTrack, withWayPoints, Constants.VERSION).
-                            header("X-GH-Took", "" + Math.round(took * 1000)).
-                            build()
-                    :
-                    Response.ok(WebHelper.jsonObject(ghResponse, instructions, calcPoints, enableElevation, pointsEncoded, took)).
-                            header("X-GH-Took", "" + Math.round(took * 1000)).
-                            build();
+    private String fromProfile(String profile) {
+        switch (profile) {
+            case "cycling-recreational": return "ncnbike";
+            case "cycling": return "bike";
+            case "cycling-mountain": return "mtb";
+            case "cycling-race": return "racingbike";
+            case "driving": return "car";
         }
-    }
 
-    private void enableEdgeBasedIfThereAreCurbsides(List<String> curbsides, GHRequest request) {
-        if (!curbsides.isEmpty()) {
-            if (!request.getHints().getBool(EDGE_BASED, true)) {
-                throw new IllegalArgumentException("Disabling '" + EDGE_BASED + "' when using '" + CURBSIDE + "' is not allowed");
-            } else {
-                request.getHints().put(EDGE_BASED, true);
-            }
-        }
-    }
-
-    private void translateTurnCostsParamToEdgeBased(GHRequest request, MultivaluedMap<String, String> queryParams) {
-        if (queryParams.containsKey(TURN_COSTS)) {
-            List<String> turnCosts = queryParams.get(TURN_COSTS);
-            if (turnCosts.size() != 1) {
-                throw new IllegalArgumentException("You may only specify the turn_costs parameter once");
-            }
-            request.getHints().put(EDGE_BASED, turnCosts.get(0));
-        }
+        return "car";
     }
 
     private static Response.ResponseBuilder gpxSuccessResponseBuilder(GHResponse ghRsp, String timeString, String
@@ -244,8 +195,7 @@ public class RouteResource {
         }
 
         long time = timeString != null ? Long.parseLong(timeString) : System.currentTimeMillis();
-        InstructionList instructions = ghRsp.getBest().getInstructions();
-        return Response.ok(GpxFromInstructions.createGPX(instructions, trackName, time, enableElevation, withRoute, withTrack, withWayPoints, version, instructions.getTr()), "application/gpx+xml").
+        return Response.ok(ghRsp.getBest().getInstructions().createGPX(trackName, time, enableElevation, withRoute, withTrack, withWayPoints, version), "application/gpx+xml").
                 header("Content-Disposition", "attachment;filename=" + "GraphHopper.gpx");
     }
 

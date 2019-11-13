@@ -35,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.graphhopper.routing.ch.CHParameters.*;
-import static com.graphhopper.routing.weighting.TurnWeighting.INFINITE_U_TURN_COSTS;
 import static com.graphhopper.util.Parameters.Algorithms.ASTAR_BI;
 import static com.graphhopper.util.Parameters.Algorithms.DIJKSTRA_BI;
 import static java.lang.System.nanoTime;
@@ -76,7 +75,6 @@ public class CHMeasurement {
         final int landmarks = cmdArgs.getInt("landmarks", 0);
         final boolean cleanup = cmdArgs.getBool("cleanup", true);
         final boolean withTurnCosts = cmdArgs.getBool("turncosts", true);
-        final int uTurnCosts = cmdArgs.getInt(Parameters.Routing.U_TURN_COSTS, INFINITE_U_TURN_COSTS);
         final double errorThreshold = cmdArgs.getDouble("threshold", 0.1);
         final long seed = cmdArgs.getLong("seed", 456);
         final int compIterations = cmdArgs.getInt("comp_iterations", 100);
@@ -131,8 +129,8 @@ public class CHMeasurement {
         LOGGER.info("Import and preparation took {}s", sw.getMillis() / 1000);
 
         if (!quick) {
-            runCompareTest(DIJKSTRA_BI, graphHopper, withTurnCosts, uTurnCosts, seed, compIterations, errorThreshold, results);
-            runCompareTest(ASTAR_BI, graphHopper, withTurnCosts, uTurnCosts, seed, compIterations, errorThreshold, results);
+            runCompareTest(DIJKSTRA_BI, graphHopper, withTurnCosts, seed, compIterations, errorThreshold, results);
+            runCompareTest(ASTAR_BI, graphHopper, withTurnCosts, seed, compIterations, errorThreshold, results);
         }
 
         if (!quick) {
@@ -195,7 +193,7 @@ public class CHMeasurement {
         return sb.toString();
     }
 
-    private static void runCompareTest(final String algo, final GraphHopper graphHopper, final boolean withTurnCosts, final int uTurnCosts,
+    private static void runCompareTest(final String algo, final GraphHopper graphHopper, final boolean withTurnCosts,
                                        long seed, final int iterations, final double threshold, final PMap results) {
         LOGGER.info("Running compare test for {}, using seed {}", algo, seed);
         Graph g = graphHopper.getGraphHopperStorage();
@@ -231,7 +229,6 @@ public class CHMeasurement {
                 req.getHints().put(Parameters.Routing.EDGE_BASED, withTurnCosts);
                 req.getHints().put(Parameters.CH.DISABLE, false);
                 req.getHints().put(Parameters.Landmark.DISABLE, true);
-                req.getHints().put(Parameters.Routing.U_TURN_COSTS, uTurnCosts);
                 req.setAlgorithm(algo);
                 long start = nanoTime();
                 GHResponse chRoute = graphHopper.route(req);

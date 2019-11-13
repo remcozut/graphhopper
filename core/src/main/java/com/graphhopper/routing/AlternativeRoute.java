@@ -17,10 +17,12 @@
  */
 package com.graphhopper.routing;
 
+import com.carrotsearch.hppc.IntObjectMap;
 import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.predicates.IntObjectPredicate;
 import com.graphhopper.coll.GHIntHashSet;
 import com.graphhopper.coll.GHIntObjectHashMap;
+import com.graphhopper.routing.AStar.AStarEntry;
 import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.WeightApproximator;
 import com.graphhopper.routing.weighting.Weighting;
@@ -157,7 +159,7 @@ public class AlternativeRoute implements RoutingAlgorithm {
     public void setMaxPaths(int maxPaths) {
         this.maxPaths = maxPaths;
         if (this.maxPaths < 2)
-            throw new IllegalArgumentException("Use normal algorithm with less overhead instead if no alternatives are required");
+            throw new IllegalStateException("Use normal algorithm with less overhead instead if no alternatives are required");
     }
 
     /**
@@ -173,11 +175,12 @@ public class AlternativeRoute implements RoutingAlgorithm {
             altBidirDijktra.setApproximation(weightApproximator);
         }
 
-        Path bestPath = altBidirDijktra.searchBest(from, to);
+        altBidirDijktra.searchBest(from, to);
         visitedNodes = altBidirDijktra.getVisitedNodes();
 
-        return altBidirDijktra.
-                calcAlternatives(bestPath, maxPaths, maxWeightFactor, 7, maxShareFactor, 0.8, minPlateauFactor, -0.2);
+        List<AlternativeInfo> alternatives = altBidirDijktra.
+                calcAlternatives(maxPaths, maxWeightFactor, 7, maxShareFactor, 0.8, minPlateauFactor, -0.2);
+        return alternatives;
     }
 
     @Override
@@ -272,17 +275,18 @@ public class AlternativeRoute implements RoutingAlgorithm {
                 return true;
 
             // The following condition is necessary to avoid traversing the full graph if areas are disconnected
-            // but it is only valid for non-CH e.g. for CH it can happen that finishedTo is true but the from-SPT could still reach 'to'
-            if (finishedFrom || finishedTo)
+            // but it is only valid for none-CH e.g. for CH it can happen that finishedTo is true but the from-SPT could still reach 'to'
+            if (!bestPath.isFound() && (finishedFrom || finishedTo))
                 return true;
 
             // increase overlap of both searches:
-            return currFrom.weight + currTo.weight > explorationFactor * bestWeight;
-            // This is more precise but takes roughly 20% longer: return currFrom.weight > bestWeight && currTo.weight > bestWeight;
+            return currFrom.weight + currTo.weight > explorationFactor * bestPath.getWeight();
+            // This is more precise but takes roughly 20% longer: return currFrom.weight > bestPath.getWeight() && currTo.weight > bestPath.getWeight();
             // For bidir A* and AStarEdge.getWeightOfVisitedPath see comment in AStarBidirection.finished
         }
 
         public Path searchBest(int from, int to) {
+            createAndInitPath();
             init(from, 0, to, 0);
             // init collections and bestPath.getWeight properly
             runAlgo();
@@ -293,27 +297,27 @@ public class AlternativeRoute implements RoutingAlgorithm {
          * @return the information necessary to handle alternative paths. Note that the paths are
          * not yet extracted.
          */
-        public List<AlternativeInfo> calcAlternatives(final Path bestPath, final int maxPaths,
+        public List<AlternativeInfo> calcAlternatives(final int maxPaths,
                                                       double maxWeightFactor, final double weightInfluence,
                                                       final double maxShareFactor, final double shareInfluence,
                                                       final double minPlateauFactor, final double plateauInfluence) {
-            final double maxWeight = maxWeightFactor * bestWeight;
-            final GHIntObjectHashMap<IntSet> traversalIdMap = new GHIntObjectHashMap<>();
-            final AtomicInteger startTID = addToMap(traversalIdMap, bestPath);
+            final double maxWeight = maxWeightFactor * bestPath.getWeight();
+            final GHIntObjectHashMap<IntSet> traversalIDMap = new GHIntObjectHashMap<>();
+            final AtomicInteger startTID = addToMap(traversalIDMap, bestPath);
 
             // find all 'good' alternatives from forward-SPT matching the backward-SPT and optimize by
             // small total weight (1), small share and big plateau (3a+b) and do these expensive calculations
             // only for plateau start candidates (2)
             final List<AlternativeInfo> alternatives = new ArrayList<>(maxPaths);
 
-            double bestPlateau = bestWeight;
+            double bestPlateau = bestPath.getWeight();
             double bestShare = 0;
-            double sortBy = calcSortBy(weightInfluence, bestWeight,
+            double sortBy = calcSortBy(weightInfluence, bestPath.getWeight(),
                     shareInfluence, bestShare,
                     plateauInfluence, bestPlateau);
 
             final AlternativeInfo bestAlt = new AlternativeInfo(sortBy, bestPath,
-                    bestFwdEntry, bestBwdEntry, bestShare, getAltNames(graph, bestFwdEntry));
+                    bestPath.sptEntry, bestPath.edgeTo, bestShare, getAltNames(graph, bestPath.sptEntry));
             alternatives.add(bestAlt);
             final List<SPTEntry> bestPathEntries = new ArrayList<>(2);
 
@@ -345,7 +349,7 @@ public class AlternativeRoute implements RoutingAlgorithm {
                     // Accept from-EdgeEntries only if such a start of a plateau
                     // i.e. discard if its parent has the same edgeId as the next to-SPTEntry.
                     // Ignore already added best path
-                    if (isBestPath(fromSPTEntry))
+                    if (isBestPath(fromSPTEntry, bestPath))
                         return true;
 
                     // For edge based traversal we need the next entry to find out the plateau start
@@ -410,7 +414,7 @@ public class AlternativeRoute implements RoutingAlgorithm {
                     SPTEntry fromEE = getFirstShareEE(fromSPTEntry.parent, true);
                     SPTEntry toEE = getFirstShareEE(toSPTEntry.parent, false);
                     double shareWeight = fromEE.getWeightOfVisitedPath() + toEE.getWeightOfVisitedPath();
-                    boolean smallShare = shareWeight / bestWeight < maxShareFactor;
+                    boolean smallShare = shareWeight / bestPath.getWeight() < maxShareFactor;
                     if (smallShare) {
                         List<String> altNames = getAltNames(graph, fromSPTEntry);
 
@@ -419,7 +423,10 @@ public class AlternativeRoute implements RoutingAlgorithm {
 
                         // plateaus.add(new PlateauInfo(altName, plateauEdges));
                         if (sortBy < worstSortBy || alternatives.size() < maxPaths) {
-                            Path path = BidirPathExtractor.extractPath(graph, weighting, fromSPTEntry, toSPTEntry, weight);
+                            Path path = new PathBidirRef(graph, weighting).
+                                    setSPTEntryTo(toSPTEntry).setSPTEntry(fromSPTEntry).
+                                    setWeight(weight);
+                            path.extract();
 
                             // for now do not add alternatives to set, if we do we need to remove then on alternatives.clear too (see below)
                             // AtomicInteger tid = addToMap(traversalIDMap, path);
@@ -460,7 +467,7 @@ public class AlternativeRoute implements RoutingAlgorithm {
                  */
                 boolean isAlreadyExisting(final int tid) {
                     final AtomicBoolean exists = new AtomicBoolean(false);
-                    traversalIdMap.forEach(new IntObjectPredicate<IntSet>() {
+                    traversalIDMap.forEach(new IntObjectPredicate<IntSet>() {
                         @Override
                         public boolean apply(int key, IntSet set) {
                             if (set.contains(tid)) {
@@ -484,7 +491,7 @@ public class AlternativeRoute implements RoutingAlgorithm {
                 }
 
                 // returns true if fromSPTEntry is identical to the specified best path
-                boolean isBestPath(SPTEntry fromSPTEntry) {
+                boolean isBestPath(SPTEntry fromSPTEntry, Path bestPath) {
                     if (traversalMode.isEdgeBased()) {
                         if (GHUtility.getEdgeFromEdgeKey(startTID.get()) == fromSPTEntry.edge) {
                             if (fromSPTEntry.parent == null)

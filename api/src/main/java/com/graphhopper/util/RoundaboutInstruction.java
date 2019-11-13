@@ -31,7 +31,7 @@ public class RoundaboutInstruction extends Instruction {
     private double radian = Double.NaN;
 
     public RoundaboutInstruction(int sign, String name, InstructionAnnotation ia, PointList pl) {
-        super(sign, name, ia, pl);
+        super(sign, TurnType.ROUNDABOUT, name, ia, pl);
     }
 
     public RoundaboutInstruction increaseExitNumber() {

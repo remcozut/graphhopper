@@ -18,10 +18,7 @@
 package com.graphhopper.util;
 
 import com.carrotsearch.hppc.IntArrayList;
-import com.graphhopper.coll.GHBitSet;
-import com.graphhopper.coll.GHBitSetImpl;
 import com.graphhopper.coll.GHIntHashSet;
-import com.graphhopper.coll.GHTBitSet;
 import com.graphhopper.routing.util.DefaultEdgeFilter;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.FlagEncoder;
@@ -50,11 +47,6 @@ public class DepthFirstSearchTest {
     @Test
     public void testDFS1() {
         DepthFirstSearch dfs = new DepthFirstSearch() {
-            @Override
-            protected GHBitSet createBitSet() {
-                return new GHBitSetImpl();
-            }
-
             @Override
             public boolean goFurther(int v) {
                 counter++;
@@ -85,11 +77,6 @@ public class DepthFirstSearchTest {
     @Test
     public void testDFS2() {
         DepthFirstSearch dfs = new DepthFirstSearch() {
-            @Override
-            protected GHBitSet createBitSet() {
-                return new GHBitSetImpl();
-            }
-
             @Override
             public boolean goFurther(int v) {
                 counter++;

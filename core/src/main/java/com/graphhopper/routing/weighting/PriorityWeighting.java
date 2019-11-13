@@ -17,6 +17,7 @@
  */
 package com.graphhopper.routing.weighting;
 
+import com.graphhopper.routing.profiles.BooleanEncodedValue;
 import com.graphhopper.routing.profiles.DecimalEncodedValue;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.FlagEncoder;
@@ -36,10 +37,13 @@ public class PriorityWeighting extends FastestWeighting {
     private final double minFactor;
     private final DecimalEncodedValue priorityEnc;
 
+
     public PriorityWeighting(FlagEncoder encoder, PMap pMap) {
         super(encoder, pMap);
+
         priorityEnc = encoder.getDecimalEncodedValue(EncodingManager.getKey(encoder, "priority"));
-        double maxPriority = PriorityCode.getFactor(BEST.getValue());
+
+        double maxPriority = 3; // PriorityCode.getFactor(BEST.getValue());
         minFactor = 1 / (0.5 + maxPriority);
     }
 
@@ -53,6 +57,15 @@ public class PriorityWeighting extends FastestWeighting {
         double weight = super.calcWeight(edgeState, reverse, prevOrNextEdgeId);
         if (Double.isInfinite(weight))
             return Double.POSITIVE_INFINITY;
-        return weight / (0.5 + edgeState.get(priorityEnc));
+
+        double prio = edgeState.get(priorityEnc);
+        if (prio > 6/7f) {
+            prio = 10;
+        } /*else if (prio > 5/7f) {
+            prio = 5;
+        }
+*/
+        return weight / (0.5 + prio);
     }
+
 }

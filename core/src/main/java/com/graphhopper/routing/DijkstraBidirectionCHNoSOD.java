@@ -17,7 +17,7 @@
  */
 package com.graphhopper.routing;
 
-import com.graphhopper.routing.ch.NodeBasedCHBidirPathExtractor;
+import com.graphhopper.routing.ch.Path4CH;
 import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.Graph;
@@ -39,12 +39,13 @@ public class DijkstraBidirectionCHNoSOD extends DijkstraBidirectionRef {
             return true;
 
         // changed also the final finish condition for CH
-        return currFrom.weight >= bestWeight && currTo.weight >= bestWeight;
+        return currFrom.weight >= bestPath.getWeight() && currTo.weight >= bestPath.getWeight();
     }
 
     @Override
-    protected BidirPathExtractor createPathExtractor(Graph graph, Weighting weighting) {
-        return new NodeBasedCHBidirPathExtractor(graph, graph.getBaseGraph(), weighting);
+    protected Path createAndInitPath() {
+        bestPath = new Path4CH(graph, graph.getBaseGraph(), weighting);
+        return bestPath;
     }
 
     @Override

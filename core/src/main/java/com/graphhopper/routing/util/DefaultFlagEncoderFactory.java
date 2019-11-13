@@ -48,6 +48,9 @@ public class DefaultFlagEncoderFactory implements FlagEncoderFactory {
         if (name.equals(MOUNTAINBIKE))
             return new MountainBikeFlagEncoder(configuration);
 
+        if (name.equals(NCNBIKE))
+            return new NcnBikeFlagEncoder(configuration);
+
         if (name.equals(FOOT))
             return new FootFlagEncoder(configuration);
 

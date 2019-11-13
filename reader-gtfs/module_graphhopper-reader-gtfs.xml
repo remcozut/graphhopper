@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_graphhopper-reader-gtfs" default="compile.module.graphhopper-reader-gtfs">
+  <dirname property="module.graphhopper-reader-gtfs.basedir" file="${ant.file.module_graphhopper-reader-gtfs}"/>
+  
+  <property name="module.jdk.home.graphhopper-reader-gtfs" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.graphhopper-reader-gtfs" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.graphhopper-reader-gtfs" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.graphhopper-reader-gtfs" value="-encoding UTF-8 -source 8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="graphhopper-reader-gtfs.output.dir" value="${module.graphhopper-reader-gtfs.basedir}/target/classes"/>
+  <property name="graphhopper-reader-gtfs.testoutput.dir" value="${module.graphhopper-reader-gtfs.basedir}/target/test-classes"/>
+  
+  <path id="graphhopper-reader-gtfs.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="graphhopper-reader-gtfs.module.production.classpath">
+    <path refid="${module.jdk.classpath.graphhopper-reader-gtfs}"/>
+    <pathelement location="${graphhopper-core.output.dir}"/>
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <pathelement location="${graphhopper-reader-osm.output.dir}"/>
+    <path refid="library.maven:_org.openstreetmap.osmosis:osmosis-osm-binary:0.46.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:24.0-jre.classpath"/>
+    <path refid="library.maven:_com.google.code.findbugs:jsr305:1.3.9.classpath"/>
+    <path refid="library.maven:_org.checkerframework:checker-compat-qual:2.0.0.classpath"/>
+    <path refid="library.maven:_com.google.errorprone:error_prone_annotations:2.1.3.classpath"/>
+    <path refid="library.maven:_com.google.j2objc:j2objc-annotations:1.1.classpath"/>
+    <path refid="library.maven:_org.codehaus.mojo:animal-sniffer-annotations:1.14.classpath"/>
+    <path refid="library.maven:_net.sourceforge.javacsv:javacsv:2.0.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:2.4.classpath"/>
+    <path refid="library.maven:_org.mapdb:mapdb:1.0.8.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_com.google.transit:gtfs-realtime-bindings:0.0.4.classpath"/>
+    <path refid="library.maven:_com.google.protobuf:protobuf-java:2.6.1.classpath"/>
+  </path>
+  
+  <path id="graphhopper-reader-gtfs.runtime.production.module.classpath">
+    <pathelement location="${graphhopper-reader-gtfs.output.dir}"/>
+    <path refid="graphhopper-core.runtime.production.module.classpath"/>
+    <path refid="graphhopper-api.runtime.production.module.classpath"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <path refid="graphhopper-reader-osm.runtime.production.module.classpath"/>
+    <path refid="library.maven:_org.openstreetmap.osmosis:osmosis-osm-binary:0.46.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:24.0-jre.classpath"/>
+    <path refid="library.maven:_com.google.code.findbugs:jsr305:1.3.9.classpath"/>
+    <path refid="library.maven:_org.checkerframework:checker-compat-qual:2.0.0.classpath"/>
+    <path refid="library.maven:_com.google.errorprone:error_prone_annotations:2.1.3.classpath"/>
+    <path refid="library.maven:_com.google.j2objc:j2objc-annotations:1.1.classpath"/>
+    <path refid="library.maven:_org.codehaus.mojo:animal-sniffer-annotations:1.14.classpath"/>
+    <path refid="library.maven:_net.sourceforge.javacsv:javacsv:2.0.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:2.4.classpath"/>
+    <path refid="library.maven:_org.mapdb:mapdb:1.0.8.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_com.google.transit:gtfs-realtime-bindings:0.0.4.classpath"/>
+    <path refid="library.maven:_com.google.protobuf:protobuf-java:2.6.1.classpath"/>
+  </path>
+  
+  <path id="graphhopper-reader-gtfs.module.classpath">
+    <path refid="${module.jdk.classpath.graphhopper-reader-gtfs}"/>
+    <pathelement location="${graphhopper-reader-gtfs.output.dir}"/>
+    <pathelement location="${graphhopper-core.testoutput.dir}"/>
+    <pathelement location="${graphhopper-core.output.dir}"/>
+    <pathelement location="${graphhopper-api.testoutput.dir}"/>
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <pathelement location="${graphhopper-reader-osm.testoutput.dir}"/>
+    <pathelement location="${graphhopper-reader-osm.output.dir}"/>
+    <path refid="library.maven:_org.openstreetmap.osmosis:osmosis-osm-binary:0.46.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:24.0-jre.classpath"/>
+    <path refid="library.maven:_com.google.code.findbugs:jsr305:1.3.9.classpath"/>
+    <path refid="library.maven:_org.checkerframework:checker-compat-qual:2.0.0.classpath"/>
+    <path refid="library.maven:_com.google.errorprone:error_prone_annotations:2.1.3.classpath"/>
+    <path refid="library.maven:_com.google.j2objc:j2objc-annotations:1.1.classpath"/>
+    <path refid="library.maven:_org.codehaus.mojo:animal-sniffer-annotations:1.14.classpath"/>
+    <path refid="library.maven:_net.sourceforge.javacsv:javacsv:2.0.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:2.4.classpath"/>
+    <path refid="library.maven:_org.mapdb:mapdb:1.0.8.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-log4j12:1.7.25.classpath"/>
+    <path refid="library.maven:_log4j:log4j:1.2.17.classpath"/>
+    <path refid="library.maven:_com.google.transit:gtfs-realtime-bindings:0.0.4.classpath"/>
+    <path refid="library.maven:_com.google.protobuf:protobuf-java:2.6.1.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-library:1.3.classpath"/>
+    <path refid="library.maven:_org.assertj:assertj-core:3.6.2.classpath"/>
+    <path refid="library.maven:_org.mockito:mockito-core:2.23.0.classpath"/>
+    <path refid="library.maven:_net.bytebuddy:byte-buddy:1.9.0.classpath"/>
+    <path refid="library.maven:_net.bytebuddy:byte-buddy-agent:1.9.0.classpath"/>
+    <path refid="library.maven:_org.objenesis:objenesis:2.6.classpath"/>
+  </path>
+  
+  <path id="graphhopper-reader-gtfs.runtime.module.classpath">
+    <pathelement location="${graphhopper-reader-gtfs.testoutput.dir}"/>
+    <pathelement location="${graphhopper-reader-gtfs.output.dir}"/>
+    <path refid="graphhopper-core.runtime.module.classpath"/>
+    <path refid="graphhopper-api.runtime.module.classpath"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <path refid="graphhopper-reader-osm.runtime.module.classpath"/>
+    <path refid="library.maven:_org.openstreetmap.osmosis:osmosis-osm-binary:0.46.classpath"/>
+    <path refid="library.maven:_com.google.guava:guava:24.0-jre.classpath"/>
+    <path refid="library.maven:_com.google.code.findbugs:jsr305:1.3.9.classpath"/>
+    <path refid="library.maven:_org.checkerframework:checker-compat-qual:2.0.0.classpath"/>
+    <path refid="library.maven:_com.google.errorprone:error_prone_annotations:2.1.3.classpath"/>
+    <path refid="library.maven:_com.google.j2objc:j2objc-annotations:1.1.classpath"/>
+    <path refid="library.maven:_org.codehaus.mojo:animal-sniffer-annotations:1.14.classpath"/>
+    <path refid="library.maven:_net.sourceforge.javacsv:javacsv:2.0.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:2.4.classpath"/>
+    <path refid="library.maven:_org.mapdb:mapdb:1.0.8.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-log4j12:1.7.25.classpath"/>
+    <path refid="library.maven:_log4j:log4j:1.2.17.classpath"/>
+    <path refid="library.maven:_com.google.transit:gtfs-realtime-bindings:0.0.4.classpath"/>
+    <path refid="library.maven:_com.google.protobuf:protobuf-java:2.6.1.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-library:1.3.classpath"/>
+    <path refid="library.maven:_org.assertj:assertj-core:3.6.2.classpath"/>
+    <path refid="library.maven:_org.mockito:mockito-core:2.23.0.classpath"/>
+    <path refid="library.maven:_net.bytebuddy:byte-buddy:1.9.0.classpath"/>
+    <path refid="library.maven:_net.bytebuddy:byte-buddy-agent:1.9.0.classpath"/>
+    <path refid="library.maven:_org.objenesis:objenesis:2.6.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.graphhopper-reader-gtfs">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.graphhopper-reader-gtfs">
+    <patternset refid="excluded.from.module.graphhopper-reader-gtfs"/>
+  </patternset>
+  
+  <path id="graphhopper-reader-gtfs.module.sourcepath">
+    <dirset dir="${module.graphhopper-reader-gtfs.basedir}">
+      <include name="src/main/java"/>
+    </dirset>
+  </path>
+  
+  <path id="graphhopper-reader-gtfs.module.test.sourcepath">
+    <dirset dir="${module.graphhopper-reader-gtfs.basedir}">
+      <include name="src/test/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.graphhopper-reader-gtfs" depends="compile.module.graphhopper-reader-gtfs.production,compile.module.graphhopper-reader-gtfs.tests" description="Compile module graphhopper-reader-gtfs"/>
+  
+  <target name="compile.module.graphhopper-reader-gtfs.production" depends="register.custom.compilers,compile.module.graphhopper-core,compile.module.graphhopper-api,compile.module.graphhopper-reader-osm" description="Compile module graphhopper-reader-gtfs; production classes">
+    <mkdir dir="${graphhopper-reader-gtfs.output.dir}"/>
+    <javac2 destdir="${graphhopper-reader-gtfs.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.graphhopper-reader-gtfs}/javac">
+      <compilerarg line="${compiler.args.graphhopper-reader-gtfs}"/>
+      <bootclasspath refid="graphhopper-reader-gtfs.module.bootclasspath"/>
+      <classpath refid="graphhopper-reader-gtfs.module.production.classpath"/>
+      <src refid="graphhopper-reader-gtfs.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.graphhopper-reader-gtfs"/>
+    </javac2>
+    
+    <copy todir="${graphhopper-reader-gtfs.output.dir}">
+      <fileset dir="${module.graphhopper-reader-gtfs.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.graphhopper-reader-gtfs.tests" depends="register.custom.compilers,compile.module.graphhopper-reader-gtfs.production" description="compile module graphhopper-reader-gtfs; test classes" unless="skip.tests">
+    <mkdir dir="${graphhopper-reader-gtfs.testoutput.dir}"/>
+    <javac2 destdir="${graphhopper-reader-gtfs.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.graphhopper-reader-gtfs}/javac">
+      <compilerarg line="${compiler.args.graphhopper-reader-gtfs}"/>
+      <bootclasspath refid="graphhopper-reader-gtfs.module.bootclasspath"/>
+      <classpath refid="graphhopper-reader-gtfs.module.classpath"/>
+      <src refid="graphhopper-reader-gtfs.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.graphhopper-reader-gtfs"/>
+    </javac2>
+    
+    <copy todir="${graphhopper-reader-gtfs.testoutput.dir}">
+      <fileset dir="${module.graphhopper-reader-gtfs.basedir}/src/test/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.graphhopper-reader-gtfs" description="cleanup module">
+    <delete dir="${graphhopper-reader-gtfs.output.dir}"/>
+    <delete dir="${graphhopper-reader-gtfs.testoutput.dir}"/>
+  </target>
+</project>

@@ -20,10 +20,8 @@ package com.graphhopper.routing.ch;
 
 import com.graphhopper.routing.util.DefaultEdgeFilter;
 import com.graphhopper.routing.util.FlagEncoder;
-import com.graphhopper.storage.CHGraph;
-import com.graphhopper.storage.DAType;
-import com.graphhopper.storage.DataAccess;
-import com.graphhopper.storage.GHDirectory;
+import com.graphhopper.routing.weighting.Weighting;
+import com.graphhopper.storage.*;
 import com.graphhopper.util.CHEdgeExplorer;
 
 abstract class AbstractNodeContractor implements NodeContractor {
@@ -35,9 +33,9 @@ abstract class AbstractNodeContractor implements NodeContractor {
     int maxLevel;
     private int maxEdgesCount;
 
-    public AbstractNodeContractor(CHGraph prepareGraph, FlagEncoder encoder) {
+    public AbstractNodeContractor(CHGraph prepareGraph, Weighting weighting) {
         this.prepareGraph = prepareGraph;
-        this.encoder = encoder;
+        this.encoder = weighting.getFlagEncoder();
         originalEdges = new GHDirectory("", DAType.RAM_INT).find("");
         originalEdges.create(1000);
     }

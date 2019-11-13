@@ -37,7 +37,7 @@ var GHRequest = function (host, api_key) {
     this.do_zoom = true;
     this.useMiles = false;
     this.dataType = "json";
-    this.api_params = {"locale": "en", "vehicle": "car", "weighting": "fastest", "elevation": false,
+    this.api_params = {"locale": "nl", "vehicle": "ncnbike", "weighting": "fastest", "elevation": false,
         "key": api_key, "pt": {}};
 
     // register events
@@ -165,11 +165,26 @@ GHRequest.prototype.createGeocodeURL = function (host, prevIndex) {
 };
 
 GHRequest.prototype.createURL = function () {
-    return this.createPath(this.host + "/route?" + this.createPointParams(false) + "&type=" + this.dataType);
+    return this.createPath(this.host + "/service/route?" + this.createPointParams(false) + "&type=" + this.dataType);
 };
 
 GHRequest.prototype.createGPXURL = function (withRoute, withTrack, withWayPoints) {
-    return this.createPath(this.host + "/route?" + this.createPointParams(false) + "&type=gpx&gpx.route=" + withRoute + "&gpx.track=" + withTrack + "&gpx.waypoints=" + withWayPoints);
+    return this.createPath(this.host + "/service/route?" + this.createPointParams(false) + "&type=gpx&gpx.route=" + withRoute + "&gpx.track=" + withTrack + "&gpx.waypoints=" + withWayPoints);
+};
+
+
+GHRequest.prototype.createNavigationURL = function() {
+    /*    /navigate/directions/v5/gh/cycling/4.884189,52.421646;4.885492,52.374788?access_token=pk.eyJ1IjoiemFybWFjIiwiYSI6ImNpb21rZ2psZjAwMGl3OGx4MXJxYm4ybW8ifQ.7OekPglcu-rmSGBwsPV6Xw&geometries=polyline6&overview=full&steps=true&bearings=0%2C90%3B&continue_straight=true&annotations=congestion%2Cdistance&language=en&roundabout_exits=true&voice_instructions=true&banner_instructions=true&voice_units=metric&enable_refresh=true*/
+    var pointParam = "";
+    for (i = 0, l = this.route.size(); i < l; i++) {
+        var point = this.route.getIndex(i);
+        if (i>0)
+            pointParam += ";"
+        pointParam += point.lng + "," + point.lat;
+    }
+
+    return this.createPath(this.host + "/service/directions/v5/mapbox/cycling/" + pointParam + "?access_token=pk.eyJ1IjoiemFybWFjIiwiYSI6ImNpb21rZ2psZjAwMGl3OGx4MXJxYm4ybW8ifQ.7OekPglcu-rmSGBwsPV6Xw&geometries=polyline6&overview=full&steps=true&continue_straight=true" +
+        "&annotations=congestion%2Cdistance&language=nl&roundabout_exits=true&voice_instructions=true&banner_instructions=true&voice_units=metric&enable_refresh=true");
 };
 
 GHRequest.prototype.createHistoryURL = function () {
@@ -193,6 +208,8 @@ GHRequest.prototype.createPointParams = function (useRawInput) {
     }
     return (str);
 };
+
+
 
 GHRequest.prototype.createPath = function (url, skipParameters) {
     for (var key in this.api_params) {
@@ -281,7 +298,7 @@ GHRequest.prototype.doRequest = function (url, callback) {
 };
 
 GHRequest.prototype.getInfo = function () {
-    var url = this.host + "/info?type=" + this.dataType + "&key=" + this.getKey();
+    var url = this.host + "/service/info?type=" + this.dataType + "&key=" + this.getKey();
     // console.log(url);
     return $.ajax({
         url: url,
@@ -305,7 +322,7 @@ GHRequest.prototype.fetchTranslationMap = function (urlLocaleParam) {
     if (!urlLocaleParam)
         // let servlet figure out the locale from the Accept-Language header
         urlLocaleParam = "";
-    var url = this.host + "/i18n/" + urlLocaleParam + "?type=" + this.dataType + "&key=" + this.getKey();
+    var url = this.host + "/service/i18n/" + urlLocaleParam + "?type=" + this.dataType + "&key=" + this.getKey();
     // console.log(url);
     return $.ajax({
         url: url,

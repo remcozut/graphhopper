@@ -60,6 +60,7 @@ public class InfoResource {
         public String data_date;
         public String prepare_ch_date;
         public String prepare_date;
+        public int version_code = Constants.VERSIONCODE;
     }
 
     @GET

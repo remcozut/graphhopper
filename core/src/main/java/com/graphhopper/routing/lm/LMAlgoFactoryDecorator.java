@@ -31,6 +31,7 @@ import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.StorableProperties;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.util.CmdArgs;
+import com.graphhopper.util.Helper;
 import com.graphhopper.util.PMap;
 import com.graphhopper.util.Parameters;
 import com.graphhopper.util.Parameters.Landmark;
@@ -87,7 +88,7 @@ public class LMAlgoFactoryDecorator implements RoutingAlgorithmFactoryDecorator 
                 lmSuggestionsLocations.add(loc.trim());
         }
         String lmWeightingsStr = args.get(Landmark.PREPARE + "weightings", "");
-        if (!lmWeightingsStr.isEmpty() && !lmWeightingsStr.equalsIgnoreCase("no") && !lmWeightingsStr.equalsIgnoreCase("false")) {
+        if (!lmWeightingsStr.isEmpty() && !lmWeightingsStr.equalsIgnoreCase("no")) {
             List<String> tmpLMWeightingList = Arrays.asList(lmWeightingsStr.split(","));
             setWeightingsAsStrings(tmpLMWeightingList);
         }
@@ -229,11 +230,6 @@ public class LMAlgoFactoryDecorator implements RoutingAlgorithmFactoryDecorator 
         if (preparations.isEmpty())
             throw new IllegalStateException("No preparations added to this decorator");
 
-        // if no weighting or vehicle is specified for this request and there is only one preparation, use it
-        if ((map.getWeighting().isEmpty() || map.getVehicle().isEmpty()) && preparations.size() == 1) {
-            return new LMRAFactory(preparations.get(0), defaultAlgoFactory);
-        }
-
         for (final PrepareLandmarks p : preparations) {
             if (p.getWeighting().matches(map))
                 return new LMRAFactory(p, defaultAlgoFactory);
@@ -272,16 +268,16 @@ public class LMAlgoFactoryDecorator implements RoutingAlgorithmFactoryDecorator 
      * This method calculates the landmark data for all weightings (optionally in parallel) or if already existent loads it.
      *
      * @return true if the preparation data for at least one weighting was calculated.
-     * @see com.graphhopper.routing.ch.CHAlgoFactoryDecorator#prepare(StorableProperties, boolean) for a very similar method
+     * @see com.graphhopper.routing.ch.CHAlgoFactoryDecorator#prepare(StorableProperties) for a very similar method
      */
-    public boolean loadOrDoWork(final StorableProperties properties, final boolean closeEarly) {
-        ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>(threadPool);
+    public boolean loadOrDoWork(final StorableProperties properties) {
+        ExecutorCompletionService completionService = new ExecutorCompletionService<>(threadPool);
         int counter = 0;
         final AtomicBoolean prepared = new AtomicBoolean(false);
         for (final PrepareLandmarks plm : preparations) {
             counter++;
             final int tmpCounter = counter;
-            final String name = AbstractWeighting.weightingToFileName(plm.getWeighting());
+            final String name = AbstractWeighting.weightingToFileName(plm.getWeighting(), false);
             completionService.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -292,9 +288,6 @@ public class LMAlgoFactoryDecorator implements RoutingAlgorithmFactoryDecorator 
                     prepared.set(true);
                     Thread.currentThread().setName(name);
                     plm.doWork();
-                    if (closeEarly) {
-                        plm.close();
-                    }
                     properties.put(Landmark.PREPARE + "date." + name, createFormatter().format(new Date()));
                 }
             }, name);

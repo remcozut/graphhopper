@@ -14,37 +14,34 @@ module.exports.extractMetaVersionInfo = function (json) {
     return metaVersionInfo;
 };
 
-module.exports.getSignName = function (sign) {
-    if (sign === -98)
-        return "u_turn";
-    else if (sign === -8)
-        return "u_turn_left";
-    else if (sign === -7)
-        return "keep_left";
+module.exports.getSignName = function (sign, turnType) {
+	turnType = turnType.replace(/ /g, "_");
+    if (sign === -4)
+        return "direction_uturn";
     else if (sign === -3)
-        return "sharp_left";
+	    return "direction_" + turnType + "_sharp_left";
     else if (sign === -2)
-        return "left";
+	    return "direction_" + turnType + "_left";
     else if (sign === -1)
-        return "slight_left";
+	    return "direction_" + turnType + "_slight_left";
     else if (sign === 0)
-        return "continue";
+	    return "direction_" + turnType + "_straight";
     else if (sign === 1)
-        return "slight_right";
+	    return "direction_" + turnType + "_slight_right";
     else if (sign === 2)
-        return "right";
+	    return "direction_" + turnType + "_right";
     else if (sign === 3)
-        return "sharp_right";
+	    return "direction_" + turnType + "_sharp_right";
     else if (sign === 4)
-        return "marker-icon-red";
-    else if (sign === 5)
-        return "marker-icon-blue";
+        return "direction_uturn";
     else if (sign === 6)
-        return "roundabout";
+        return "direction_roundabout";
     else if (sign === 7)
-        return "keep_right";
+        return "marker-icon-red";
     else if (sign === 8)
-        return "u_turn_right";
+        return "marker-icon-blue";
+    else if (sign === 104)
+        return "junction";
     else if (sign === 101)
         return "pt_start_trip";
     else if (sign === 102)
@@ -53,7 +50,9 @@ module.exports.getSignName = function (sign) {
         return "pt_end_trip";
     else
     // throw "did not find sign " + sign;
-        return "unknown";
+        return "direction_close";
+
+
 };
 
 module.exports.browserTitle = "GraphHopper Maps - Driving Directions";

@@ -29,18 +29,25 @@ import com.graphhopper.util.PointAccess;
  */
 public interface NodeAccess extends PointAccess {
     /**
-     * @return the index used to retrieve turn cost information for this node, can be {@link TurnCostExtension#NO_TURN_ENTRY}
-     *         in case no turn costs were stored for this node
-     * @throws AssertionError if, and only if, the underlying storage does not support turn costs
+     * @return the additional value at the specified node index
+     * @throws AssertionError if, and only if, the extendedStorage does not require an additional
+     *                        node field
      */
-    int getTurnCostIndex(int nodeId);
+    int getAdditionalNodeField(int nodeId);
 
     /**
-     * Sets the turn cost index for this node, using {@link TurnCostExtension#NO_TURN_ENTRY} means there
-     * are no turn costs at this node.
+     * Sets the additional value at the specified node index
      * <p>
      *
-     * @throws AssertionError if, and only if, the underlying storage does not support turn costs
+     * @throws AssertionError if, and only if, the extendedStorage does not require an additional
+     *                        node field
      */
-    void setTurnCostIndex(int nodeId, int additionalValue);
+    void setAdditionalNodeField(int nodeId, int additionalValue);
+
+
+    String getName(int nodeId);
+
+    void setName(int nodeId, String name);
+
+
 }

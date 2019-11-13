@@ -58,7 +58,7 @@ public class RoutingAlgorithmFactorySimple implements RoutingAlgorithmFactory {
 
         } else if (ALT_ROUTE.equalsIgnoreCase(algoStr)) {
             AlternativeRoute altRouteAlgo = new AlternativeRoute(g, opts.getWeighting(), opts.getTraversalMode());
-            altRouteAlgo.setMaxPaths(opts.getHints().getInt(MAX_PATHS, 2));
+            altRouteAlgo.setMaxPaths(opts.getHints().getInt(MAX_PATHS, 4));
             altRouteAlgo.setMaxWeightFactor(opts.getHints().getDouble(MAX_WEIGHT, 1.4));
             altRouteAlgo.setMaxShareFactor(opts.getHints().getDouble(MAX_SHARE, 0.6));
             altRouteAlgo.setMinPlateauFactor(opts.getHints().getDouble("alternative_route.min_plateau_factor", 0.2));

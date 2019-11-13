@@ -18,9 +18,9 @@
 package com.graphhopper.routing;
 
 import com.graphhopper.routing.profiles.BooleanEncodedValue;
-import com.graphhopper.routing.profiles.MaxSpeed;
 import com.graphhopper.routing.profiles.DecimalEncodedValue;
 import com.graphhopper.routing.util.DataFlagEncoder;
+import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.FlagEncoder;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.storage.NodeAccess;
@@ -37,8 +37,8 @@ import java.util.List;
  * There are different sets of edges.
  * The previous edge is the edge we are coming from.
  * The current edge is the edge we turn on.
- * The allowedOutgoingEdges contains all edges that the current vehicle is allowed(*) to turn on to, excluding the prev edge and the current edge.
- * The allOutgoingEdges contains all edges surrounding this turn instruction, without the prev edge and the current edge.
+ * The allowedIncomingEdges contains all edges that the current vehicle is allowed(*) to turn on to, excluding the prev edge and the current edge.
+ * The allIncomingEdges contains all edges surrounding this turn instruction, without the prev edge and the current edge.
  * (*): This might not consider turn restrictions, but only simple access values.
  * Here is an example:
  * <pre>
@@ -50,8 +50,8 @@ import java.util.List;
  * For the route from A->B->C and baseNode=B, adjacentNode=C:
  * - the previous edge is A->B
  * - the current edge is B->C
- * - the allowedOutgoingEdges are B->C => return value of {@link #nrOfAllowedOutgoingEdges()} is 1
- * - the allOutgoingEdges are B->X and B->C => return values of {@link #nrOfAllOutgoingEdges()} is 2
+ * - the allowedIncomingEdges are B->C => return value of {@link #nrOfAllowedOutgoingEdges()} is 1
+ * - the allIncomingEdges are B->X and B->C => return values of {@link #nrOfAllOutgoingEdges()} is 2
  *
  * @author Robin Boldt
  */
@@ -68,7 +68,7 @@ class InstructionsOutgoingEdges {
 
     final FlagEncoder encoder;
     final BooleanEncodedValue accessEnc;
-    final DecimalEncodedValue speedEnc;
+    final DecimalEncodedValue avSpeedEnc;
     final NodeAccess nodeAccess;
 
     public InstructionsOutgoingEdges(EdgeIteratorState prevEdge,
@@ -83,7 +83,9 @@ class InstructionsOutgoingEdges {
         this.currentEdge = currentEdge;
         this.encoder = encoder;
         this.accessEnc = encoder.getAccessEnc();
-        this.speedEnc = (encoder instanceof DataFlagEncoder) ? encoder.getDecimalEncodedValue(MaxSpeed.KEY) : encoder.getAverageSpeedEnc();
+        this.avSpeedEnc = encoder.getAverageSpeedEnc();
+
+
         this.nodeAccess = nodeAccess;
 
         EdgeIteratorState tmpEdge;
@@ -150,11 +152,15 @@ class InstructionsOutgoingEdges {
     }
 
     private double getSpeed(EdgeIteratorState edge) {
-        return edge.get(speedEnc);
+        if (encoder instanceof DataFlagEncoder) {
+            return ((DataFlagEncoder) encoder).getMaxspeed(edge, 0, false);
+        } else {
+            return edge.get(avSpeedEnc);
+        }
     }
 
     /**
-     * Returns an edge that has more or less in the same orientation as the prevEdge, but is not the currentEdge.
+     * Returns an edge that has more or less in the same heading as the prevEdge, but is not the currentEdge.
      * If there is one, this indicates that we might need an instruction to help finding the correct edge out of the different choices.
      * If there is none, return null.
      */
@@ -176,9 +182,17 @@ class InstructionsOutgoingEdges {
      * If either of these properties is true, we can be quite certain that a turn instruction should be provided.
      */
     public boolean isLeavingCurrentStreet(String prevName, String name) {
+        ///ToDO: RZU is name street changes from name than true
+        /*
         if (InstructionsHelper.isNameSimilar(name, prevName)) {
             return false;
         }
+        */
+
+        if (! InstructionsHelper.isNameSimilar(name, prevName)) {
+            return true;
+        }
+
 
         // If flags are changing, there might be a chance we find these flags on a different edge
         boolean checkFlag = currentEdge.getFlags() != prevEdge.getFlags();
@@ -194,6 +208,7 @@ class InstructionsOutgoingEdges {
         return false;
     }
 
+
     private boolean isTheSameStreet(String name1, IntsRef flags1, String name2, IntsRef flags2, boolean checkFlag) {
         if (InstructionsHelper.isNameSimilar(name1, name2)) {
             if (!checkFlag || flags1.equals(flags2)) {
@@ -201,6 +216,14 @@ class InstructionsOutgoingEdges {
             }
         }
         return false;
+    }
+
+    public List<EdgeIteratorState> getAllowedOutgingEdges() {
+        return allowedOutgoingEdges;
+    }
+
+    public List<EdgeIteratorState> getAllOutgoingEdges() {
+        return allOutgoingEdges;
     }
 
 }

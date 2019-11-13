@@ -17,8 +17,6 @@
  */
 package com.graphhopper.routing.weighting;
 
-import com.graphhopper.routing.profiles.EnumEncodedValue;
-import com.graphhopper.routing.profiles.RoadAccess;
 import com.graphhopper.routing.util.FlagEncoder;
 import com.graphhopper.routing.util.HintsMap;
 import com.graphhopper.util.EdgeIteratorState;
@@ -41,21 +39,12 @@ public class FastestWeighting extends AbstractWeighting {
     private final double headingPenalty;
     private final long headingPenaltyMillis;
     private final double maxSpeed;
-    private EnumEncodedValue<RoadAccess> roadAccessEnc = null;
-    // this factor puts a penalty on roads with a "destination"-only access, see #733
-    private double roadAccessPenalty;
 
     public FastestWeighting(FlagEncoder encoder, PMap map) {
         super(encoder);
         headingPenalty = map.getDouble(Routing.HEADING_PENALTY, Routing.DEFAULT_HEADING_PENALTY);
         headingPenaltyMillis = Math.round(headingPenalty * 1000);
         maxSpeed = encoder.getMaxSpeed() / SPEED_CONV;
-
-        if (encoder.hasEncodedValue(RoadAccess.KEY)) {
-            // ensure that we do not need to change getMinWeight, i.e. road_access_factor >= 1
-            roadAccessPenalty = checkBounds("road_access_factor", map.getDouble("road_access_factor", 10), 1, 10);
-            roadAccessEnc = encoder.getEnumEncodedValue(RoadAccess.KEY, RoadAccess.class);
-        }
     }
 
     public FastestWeighting(FlagEncoder encoder) {
@@ -75,9 +64,6 @@ public class FastestWeighting extends AbstractWeighting {
 
         double time = edge.getDistance() / speed * SPEED_CONV;
 
-        if (roadAccessEnc != null && edge.get(roadAccessEnc) == RoadAccess.DESTINATION)
-            time *= roadAccessPenalty;
-
         // add direction penalties at start/stop/via points
         boolean unfavoredEdge = edge.get(EdgeIteratorState.UNFAVORED_EDGE);
         if (unfavoredEdge)
@@ -88,20 +74,15 @@ public class FastestWeighting extends AbstractWeighting {
 
     @Override
     public long calcMillis(EdgeIteratorState edgeState, boolean reverse, int prevOrNextEdgeId) {
-        // TODO move this to AbstractWeighting? see #485
+        // TODO move this to AbstractWeighting?
         long time = 0;
         boolean unfavoredEdge = edgeState.get(EdgeIteratorState.UNFAVORED_EDGE);
         if (unfavoredEdge)
             time += headingPenaltyMillis;
 
+
+
         return time + super.calcMillis(edgeState, reverse, prevOrNextEdgeId);
-    }
-
-    static double checkBounds(String key, double val, double from, double to) {
-        if (val < from || val > to)
-            throw new IllegalArgumentException(key + " has invalid range should be within [" + from + ", " + to + "]");
-
-        return val;
     }
 
     @Override

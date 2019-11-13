@@ -17,7 +17,10 @@
  */
 package com.graphhopper.routing.util;
 
-import com.graphhopper.reader.*;
+import com.graphhopper.reader.ConditionalTagInspector;
+import com.graphhopper.reader.ReaderNode;
+import com.graphhopper.reader.ReaderRelation;
+import com.graphhopper.reader.ReaderWay;
 import com.graphhopper.reader.osm.conditional.ConditionalOSMTagInspector;
 import com.graphhopper.reader.osm.conditional.DateRangeParser;
 import com.graphhopper.routing.profiles.*;
@@ -27,10 +30,7 @@ import com.graphhopper.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Abstract class which handles flag decoding and encoding. Every encoder should be registered to a
@@ -59,8 +59,19 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     private long encoderBit;
     protected BooleanEncodedValue accessEnc;
     protected BooleanEncodedValue roundaboutEnc;
-    protected DecimalEncodedValue avgSpeedEnc;
-    // This value determines the maximal possible speed of any road regardless of the maxspeed value
+    protected DecimalEncodedValue speedEncoder;
+    protected IntEncodedValue wayTypeEncoder;
+
+
+    protected IntEncodedValue nodeReferenceEnc;
+
+    protected final Set<String> nodeNameReferences = new HashSet<>(5);
+    protected final Map<Long, List<String>> nodeNameTags = new HashMap<>(5);
+
+
+
+    protected PMap properties;
+    // This value determines the maximal possible speed of any road regardless the maxspeed value
     // lower values allow more compact representation of the routing graph
     protected int maxPossibleSpeed;
     /* Edge Flag Encoder fields */
@@ -77,6 +88,9 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     protected static final double UNKNOWN_DURATION_FERRY_SPEED = 5;
     protected static final double SHORT_TRIP_FERRY_SPEED = 20;
     protected static final double LONG_TRIP_FERRY_SPEED = 30;
+
+
+    protected int maxUturnDistance = 35;
 
     private ConditionalTagInspector conditionalTagInspector;
 
@@ -95,7 +109,8 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
      * @param maxTurnCosts specify the maximum value used for turn costs, if this value is reached a
      *                     turn is forbidden and results in costs of positive infinity.
      */
-    protected AbstractFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts) {
+    protected AbstractFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts, int maxUturnDistance) {
+        this.maxUturnDistance = maxUturnDistance;
         this.maxTurnCosts = maxTurnCosts <= 0 ? 0 : maxTurnCosts;
         this.speedBits = speedBits;
         this.speedFactor = speedFactor;
@@ -121,6 +136,11 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
 
     public void setRegistered(boolean registered) {
         this.registered = registered;
+    }
+
+    @Override
+    public int getWayType(IntsRef edgeFlags) {
+        return 0;
     }
 
     /**
@@ -163,8 +183,9 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
      */
     public void createEncodedValues(List<EncodedValue> registerNewEncodedValue, String prefix, int index) {
         // define the first 2 speedBits in flags for routing
-        registerNewEncodedValue.add(accessEnc = new SimpleBooleanEncodedValue(EncodingManager.getKey(prefix, "access"), true));
-        roundaboutEnc = getBooleanEncodedValue(Roundabout.KEY);
+        registerNewEncodedValue.add(accessEnc = new SimpleBooleanEncodedValue(prefix + "access", true));
+        registerNewEncodedValue.add(nodeReferenceEnc = new SimpleIntEncodedValue(prefix + "ref", 32));
+        roundaboutEnc = getBooleanEncodedValue(EncodingManager.ROUNDABOUT);
         encoderBit = 1L << index;
     }
 
@@ -175,10 +196,6 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
      */
     public int defineRelationBits(int index, int shift) {
         return shift;
-    }
-
-    public boolean acceptsTurnRelation(OSMTurnRelation relation) {
-        return true;
     }
 
     /**
@@ -201,10 +218,6 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
      */
     public abstract IntsRef handleWayTags(IntsRef edgeFlags, ReaderWay way, EncodingManager.Access access, long relationFlags);
 
-    public IntsRef handleWayTags(IntsRef edgeFlags, ReaderWay way, EncodingManager.Access access) {
-        return handleWayTags(edgeFlags, way, access, 0);
-    }
-
     /**
      * Parse tags on nodes. Node tags can add to speed (like traffic_signals) where the value is
      * strict negative or blocks access (like a barrier), then the value is strictly positive. This
@@ -212,7 +225,12 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
      *
      * @return encoded values or 0 if not blocking or no value stored
      */
+
+    private List<String> lastNodeNameTagList = new ArrayList<>(5);
+
     public long handleNodeTags(ReaderNode node) {
+
+        lastNodeNameTagList.clear();
         // absolute barriers always block
         if (node.hasTag("barrier", absoluteBarriers))
             return encoderBit;
@@ -235,6 +253,23 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
                 return encoderBit;
         }
 
+        if (hasNodeNameReferences()) {
+            for (String refKey : nodeNameReferences) {
+                if (refKey.contains("=")) {
+                    String[] keyVal = refKey.split("=");
+                    if (node.hasTag(keyVal[0], keyVal[1])) { // use poi name tag
+                        lastNodeNameTagList.add(node.getTag("name", ""));
+                    }
+                } else {
+                    if (node.hasTag(refKey)) {
+                        lastNodeNameTagList.add(node.getTag(refKey));
+                    }
+                }
+            }
+        }
+
+
+
         // In case explicit flag ford=no, don't block
         if (blockFords
                 && (node.hasTag("highway", "ford") || node.hasTag("ford"))
@@ -242,6 +277,15 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
                 && !node.hasTag("ford", "no")) {
             return encoderBit;
         }
+
+
+        //TODO: Fix this encoderBit constant to generic solution
+        if (!lastNodeNameTagList.isEmpty()) {
+                nodeNameTags.put(node.getId(), new ArrayList<String>(lastNodeNameTagList));
+                return EncodingManager.NODE_NAME_ENCODING_BIT;
+        }
+
+
 
         return 0;
     }
@@ -251,16 +295,23 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
         return InstructionAnnotation.EMPTY;
     }
 
+    public List<String> getOsmNodeTags(long osmNodeId) {
+        return nodeNameTags.get(osmNodeId);
+    }
+
     /**
      * Sets default flags with specified access.
      */
     protected void flagsDefault(IntsRef edgeFlags, boolean forward, boolean backward) {
         if (forward)
-            avgSpeedEnc.setDecimal(false, edgeFlags, speedDefault);
-        if (backward && avgSpeedEnc.isStoreTwoDirections())
-            avgSpeedEnc.setDecimal(true, edgeFlags, speedDefault);
+            speedEncoder.setDecimal(false, edgeFlags, speedDefault);
+        if (backward)
+            speedEncoder.setDecimal(true, edgeFlags, speedDefault);
         accessEnc.setBool(false, edgeFlags, forward);
         accessEnc.setBool(true, edgeFlags, backward);
+
+
+
     }
 
     @Override
@@ -312,7 +363,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
 
         // on some German autobahns and a very few other places
         if ("none".equals(str))
-            return MaxSpeed.UNLIMITED_SIGN_SPEED;
+            return 140;
 
         if (str.endsWith(":rural") || str.endsWith(":trunk"))
             return 80;
@@ -361,6 +412,11 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
      * calculate precise speed values based on elevation data stored in the specified edge.
      */
     public void applyWayTags(ReaderWay way, EdgeIteratorState edge) {
+    }
+
+
+    public int getMaxUturnDistance() {
+        return maxUturnDistance;
     }
 
     /**
@@ -524,15 +580,21 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     }
 
     public final DecimalEncodedValue getAverageSpeedEnc() {
-        if (avgSpeedEnc == null)
+        if (speedEncoder == null)
             throw new NullPointerException("FlagEncoder " + toString() + " not yet initialized");
-        return avgSpeedEnc;
+        return speedEncoder;
     }
 
     public final BooleanEncodedValue getAccessEnc() {
         if (accessEnc == null)
             throw new NullPointerException("FlagEncoder " + toString() + " not yet initialized");
         return accessEnc;
+    }
+
+    public final IntEncodedValue getNodeNameEnc() {
+        if (nodeReferenceEnc == null)
+            throw new NullPointerException("FlagEncoder " + toString() + " not yet initialized");
+        return nodeReferenceEnc;
     }
 
     /**
@@ -546,7 +608,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
             throw new IllegalArgumentException("Speed cannot be negative or NaN: " + speed + ", flags:" + BitUtil.LITTLE.toBitString(edgeFlags));
 
         if (speed < speedFactor / 2) {
-            avgSpeedEnc.setDecimal(reverse, edgeFlags, 0);
+            speedEncoder.setDecimal(reverse, edgeFlags, 0);
             accessEnc.setBool(reverse, edgeFlags, false);
             return;
         }
@@ -554,7 +616,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
         if (speed > getMaxSpeed())
             speed = getMaxSpeed();
 
-        avgSpeedEnc.setDecimal(reverse, edgeFlags, speed);
+        speedEncoder.setDecimal(reverse, edgeFlags, speed);
     }
 
     double getSpeed(IntsRef edgeFlags) {
@@ -562,7 +624,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     }
 
     double getSpeed(boolean reverse, IntsRef edgeFlags) {
-        double speedVal = avgSpeedEnc.getDecimal(reverse, edgeFlags);
+        double speedVal = speedEncoder.getDecimal(reverse, edgeFlags);
         if (speedVal < 0)
             throw new IllegalStateException("Speed was negative!? " + speedVal);
 
@@ -598,6 +660,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
         return encodedValueLookup.getBooleanEncodedValue(key);
     }
 
+
     @Override
     public IntEncodedValue getIntEncodedValue(String key) {
         return encodedValueLookup.getIntEncodedValue(key);
@@ -609,8 +672,8 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     }
 
     @Override
-    public <T extends Enum> EnumEncodedValue<T> getEnumEncodedValue(String key, Class<T> enumType) {
-        return encodedValueLookup.getEnumEncodedValue(key, enumType);
+    public ObjectEncodedValue getObjectEncodedValue(String key) {
+        return encodedValueLookup.getObjectEncodedValue(key);
     }
 
     public void setEncodedValueLookup(EncodedValueLookup encodedValueLookup) {
@@ -626,7 +689,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     }
 
     @Override
-    public boolean hasEncodedValue(String key) {
-        return encodedValueLookup.hasEncodedValue(key);
+    public boolean hasEncoder(String key) {
+        return encodedValueLookup.hasEncoder(key);
     }
 }

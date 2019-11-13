@@ -2802,7 +2802,7 @@
   <tag k="building" v="yes"/>
   <tag k="building:levels" v="2"/>
   <tag k="roof:levels" v="1.5"/>
-  <tag k="roof:orientation" v="across"/>
+  <tag k="roof:heading" v="across"/>
   <tag k="roof:shape" v="gabled"/>
  </way>
  <way id="77815899" visible="true" version="4" changeset="11495913" timestamp="2012-05-04T09:06:55Z" user="Jörg Roth" uid="24047">
@@ -2851,7 +2851,7 @@
   <tag k="building" v="yes"/>
   <tag k="building:levels" v="2"/>
   <tag k="roof:levels" v="2"/>
-  <tag k="roof:orientation" v="across"/>
+  <tag k="roof:heading" v="across"/>
   <tag k="roof:shape" v="gabled"/>
  </way>
  <way id="77815547" visible="true" version="4" changeset="17165139" timestamp="2013-07-31T11:54:10Z" user="geodreieck4711" uid="479256">
@@ -3733,7 +3733,7 @@
   <tag k="building" v="yes"/>
   <tag k="building:levels" v="2"/>
   <tag k="roof:levels" v="1.5"/>
-  <tag k="roof:orientation" v="across"/>
+  <tag k="roof:heading" v="across"/>
   <tag k="roof:shape" v="gabled"/>
  </way>
  <way id="201039222" visible="true" version="4" changeset="37928213" timestamp="2016-03-18T21:16:22Z" user="pyram" uid="497849">
@@ -3896,7 +3896,7 @@
   <tag k="building" v="yes"/>
   <tag k="building:levels" v="2"/>
   <tag k="roof:levels" v="1.5"/>
-  <tag k="roof:orientation" v="across"/>
+  <tag k="roof:heading" v="across"/>
   <tag k="roof:shape" v="gabled"/>
  </way>
  <way id="335051236" visible="true" version="1" changeset="29781608" timestamp="2015-03-27T16:27:46Z" user="pyram" uid="497849">
@@ -3909,7 +3909,7 @@
   <tag k="building" v="yes"/>
   <tag k="building:levels" v="2"/>
   <tag k="roof:levels" v="1.5"/>
-  <tag k="roof:orientation" v="across"/>
+  <tag k="roof:heading" v="across"/>
   <tag k="roof:shape" v="gabled"/>
  </way>
  <way id="342813848" visible="true" version="1" changeset="30789430" timestamp="2015-05-04T19:44:37Z" user="pyram" uid="497849">
@@ -3922,7 +3922,7 @@
   <tag k="building" v="yes"/>
   <tag k="building:levels" v="2"/>
   <tag k="roof:levels" v="2"/>
-  <tag k="roof:orientation" v="along"/>
+  <tag k="roof:heading" v="along"/>
   <tag k="roof:shape" v="gabled"/>
  </way>
  <way id="307653043" visible="true" version="1" changeset="26060592" timestamp="2014-10-13T21:53:12Z" user="pyram" uid="497849">
@@ -4607,7 +4607,7 @@
   <tag k="building" v="yes"/>
   <tag k="building:levels" v="2"/>
   <tag k="roof:levels" v="1.5"/>
-  <tag k="roof:orientation" v="across"/>
+  <tag k="roof:heading" v="across"/>
   <tag k="roof:shape" v="gabled"/>
  </way>
  <way id="404460940" visible="true" version="1" changeset="37928213" timestamp="2016-03-18T21:16:16Z" user="pyram" uid="497849">
@@ -4632,7 +4632,7 @@
   <tag k="building" v="yes"/>
   <tag k="building:levels" v="2"/>
   <tag k="roof:levels" v="2"/>
-  <tag k="roof:orientation" v="across"/>
+  <tag k="roof:heading" v="across"/>
   <tag k="roof:shape" v="gabled"/>
  </way>
  <way id="404460946" visible="true" version="1" changeset="37928213" timestamp="2016-03-18T21:16:17Z" user="pyram" uid="497849">
@@ -4645,7 +4645,7 @@
   <tag k="building" v="yes"/>
   <tag k="building:levels" v="2"/>
   <tag k="roof:levels" v="1.5"/>
-  <tag k="roof:orientation" v="across"/>
+  <tag k="roof:heading" v="across"/>
   <tag k="roof:shape" v="gabled"/>
  </way>
  <way id="404460960" visible="true" version="1" changeset="37928213" timestamp="2016-03-18T21:16:18Z" user="pyram" uid="497849">

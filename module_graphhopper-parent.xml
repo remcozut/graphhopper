@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_graphhopper-parent" default="compile.module.graphhopper-parent">
+  <dirname property="module.graphhopper-parent.basedir" file="${ant.file.module_graphhopper-parent}"/>
+  
+  <property name="module.jdk.home.graphhopper-parent" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.graphhopper-parent" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.graphhopper-parent" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.graphhopper-parent" value="-encoding UTF-8 -source 8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="graphhopper-parent.output.dir" value="${module.graphhopper-parent.basedir}/target/classes"/>
+  <property name="graphhopper-parent.testoutput.dir" value="${module.graphhopper-parent.basedir}/target/test-classes"/>
+  
+  <path id="graphhopper-parent.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="graphhopper-parent.module.production.classpath">
+    <path refid="${module.jdk.classpath.graphhopper-parent}"/>
+  </path>
+  
+  <path id="graphhopper-parent.runtime.production.module.classpath">
+    <pathelement location="${graphhopper-parent.output.dir}"/>
+  </path>
+  
+  <path id="graphhopper-parent.module.classpath">
+    <path refid="${module.jdk.classpath.graphhopper-parent}"/>
+    <pathelement location="${graphhopper-parent.output.dir}"/>
+  </path>
+  
+  <path id="graphhopper-parent.runtime.module.classpath">
+    <pathelement location="${graphhopper-parent.testoutput.dir}"/>
+    <pathelement location="${graphhopper-parent.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.graphhopper-parent">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.graphhopper-parent">
+    <patternset refid="excluded.from.module.graphhopper-parent"/>
+  </patternset>
+  
+  
+  <target name="compile.module.graphhopper-parent" depends="compile.module.graphhopper-parent.production,compile.module.graphhopper-parent.tests" description="Compile module graphhopper-parent"/>
+  
+  <target name="compile.module.graphhopper-parent.production" depends="register.custom.compilers" description="Compile module graphhopper-parent; production classes"/>
+  
+  <target name="compile.module.graphhopper-parent.tests" depends="register.custom.compilers,compile.module.graphhopper-parent.production" description="compile module graphhopper-parent; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.graphhopper-parent" description="cleanup module">
+    <delete dir="${graphhopper-parent.output.dir}"/>
+    <delete dir="${graphhopper-parent.testoutput.dir}"/>
+  </target>
+</project>

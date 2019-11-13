@@ -19,6 +19,8 @@ package com.graphhopper.routing.util;
 
 import com.graphhopper.reader.ReaderRelation;
 import com.graphhopper.reader.ReaderWay;
+import com.graphhopper.routing.profiles.IntEncodedValue;
+import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.PMap;
 
 import java.util.TreeMap;
@@ -43,6 +45,7 @@ public class MountainBikeFlagEncoder extends BikeCommonFlagEncoder {
                 properties.getDouble("speed_factor", 2),
                 properties.getBool("turn_costs", false) ? 1 : 0
         );
+        this.properties = properties;
         this.setBlockFords(properties.getBool("block_fords", true));
     }
 
@@ -108,7 +111,6 @@ public class MountainBikeFlagEncoder extends BikeCommonFlagEncoder {
         setHighwaySpeed("tertiary_link", 18);
 
         addPushingSection("footway");
-        addPushingSection("platform");
         addPushingSection("pedestrian");
         addPushingSection("steps");
 
@@ -141,6 +143,11 @@ public class MountainBikeFlagEncoder extends BikeCommonFlagEncoder {
     @Override
     public int getVersion() {
         return 2;
+    }
+
+    @Override
+    public boolean hasNodeNameReferences() {
+        return false;
     }
 
     @Override
@@ -183,4 +190,7 @@ public class MountainBikeFlagEncoder extends BikeCommonFlagEncoder {
     public String toString() {
         return "mtb";
     }
+
 }
+
+

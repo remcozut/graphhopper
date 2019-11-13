@@ -19,7 +19,6 @@ package com.graphhopper.util.shapes;
 
 import com.graphhopper.util.Helper;
 import com.graphhopper.util.NumHelper;
-import org.locationtech.jts.geom.Envelope;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +46,7 @@ public class BBox implements Shape, Cloneable {
     public double maxEle;
 
     public BBox(double[] coords) {
-        this(coords[0], coords[2], coords[1], coords[3]);
+        this(coords[0],coords[2],coords[1],coords[3]);
     }
 
     public BBox(double minLon, double maxLon, double minLat, double maxLat) {
@@ -123,7 +122,7 @@ public class BBox implements Shape, Cloneable {
      * @return the intersecting BBox or null if not intersecting
      */
     public BBox calculateIntersection(BBox bBox) {
-        if (!this.intersects(bBox))
+        if (!this.intersect(bBox))
             return null;
 
         double minLon = Math.max(this.minLon, bBox.minLon);
@@ -140,11 +139,11 @@ public class BBox implements Shape, Cloneable {
     }
 
     @Override
-    public boolean intersects(Shape s) {
+    public boolean intersect(Shape s) {
         if (s instanceof BBox) {
-            return intersects((BBox) s);
+            return intersect((BBox) s);
         } else if (s instanceof Circle) {
-            return ((Circle) s).intersects(this);
+            return ((Circle) s).intersect(this);
         }
 
         throw new UnsupportedOperationException("unsupported shape");
@@ -161,24 +160,14 @@ public class BBox implements Shape, Cloneable {
         throw new UnsupportedOperationException("unsupported shape");
     }
 
-    public boolean intersects(Circle s) {
-        return s.intersects(this);
+    public boolean intersect(Circle s) {
+        return ((Circle) s).intersect(this);
     }
 
-    /**
-     * This method calculates if this BBox intersects with the specified BBox
-     */
-    public boolean intersects(double minLon, double maxLon, double minLat, double maxLat) {
-        return this.minLon < maxLon && this.minLat < maxLat && minLon < this.maxLon && minLat < this.maxLat;
-    }
-
-    /**
-     * This method calculates if this BBox intersects with the specified BBox
-     */
-    public boolean intersects(BBox o) {
+    public boolean intersect(BBox o) {
         // return (o.minLon < minLon && o.maxLon > minLon || o.minLon < maxLon && o.minLon >= minLon)
         //  && (o.maxLat < maxLat && o.maxLat >= minLat || o.maxLat >= maxLat && o.minLat < maxLat);
-        return this.minLon < o.maxLon && this.minLat < o.maxLat && o.minLon < this.maxLon && o.minLat < this.maxLat;
+        return minLon < o.maxLon && minLat < o.maxLat && o.minLon < maxLon && o.minLat < maxLat;
     }
 
     @Override
@@ -281,10 +270,6 @@ public class BBox implements Shape, Cloneable {
             list.add(Helper.round2(maxEle));
 
         return list;
-    }
-
-    public static BBox fromEnvelope(Envelope envelope) {
-        return new BBox(envelope.getMinX(), envelope.getMaxX(), envelope.getMinY(), envelope.getMaxY());
     }
 
     /**

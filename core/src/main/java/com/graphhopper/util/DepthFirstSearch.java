@@ -22,11 +22,12 @@ import com.graphhopper.coll.GHBitSet;
 
 /**
  * Implementation of depth first search (DFS) by LIFO queue
+ * <p>
  *
  * @author Peter Karich
  * @author Jan Sölter
  */
-public abstract class DepthFirstSearch extends XFirstSearch {
+public class DepthFirstSearch extends XFirstSearch {
     /**
      * beginning with startNode add all following nodes to LIFO queue. If node has been already
      * explored before, skip reexploration.

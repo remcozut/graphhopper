@@ -17,46 +17,67 @@
  */
 package com.graphhopper.util;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.locationtech.jts.io.WKTWriter;
+
+import java.util.*;
 
 public class Instruction {
     public static final int UNKNOWN = -99;
-    public static final int U_TURN_UNKNOWN = -98;
-    public static final int U_TURN_LEFT = -8;
-    public static final int KEEP_LEFT = -7;
+//    public static final int U_TURN_UNKNOWN = -98;
+
     public static final int LEAVE_ROUNDABOUT = -6; // for future use
-    public static final int TURN_SHARP_LEFT = -3;
-    public static final int TURN_LEFT = -2;
-    public static final int TURN_SLIGHT_LEFT = -1;
-    public static final int CONTINUE_ON_STREET = 0;
-    public static final int TURN_SLIGHT_RIGHT = 1;
-    public static final int TURN_RIGHT = 2;
-    public static final int TURN_SHARP_RIGHT = 3;
-    public static final int FINISH = 4;
-    public static final int REACHED_VIA = 5;
+    public static final int U_TURN_LEFT = -4;
+    public static final int SHARP_LEFT = -3;
+    public static final int LEFT = -2;
+    public static final int SLIGHT_LEFT = -1;
+    public static final int STRAIGHT = 0;
+    public static final int SLIGHT_RIGHT = 1;
+    public static final int RIGHT = 2;
+    public static final int SHARP_RIGHT = 3;
+    public static final int U_TURN_RIGHT = 4;
     public static final int USE_ROUNDABOUT = 6;
+
+
+    public static final int FINISH = 7;
+    public static final int REACHED_VIA = 8;
     public static final int IGNORE = Integer.MIN_VALUE;
-    public static final int KEEP_RIGHT = 7;
-    public static final int U_TURN_RIGHT = 8;
+
+
     public static final int PT_START_TRIP = 101;
     public static final int PT_TRANSFER = 102;
     public static final int PT_END_TRIP = 103;
+
     private static final AngleCalc AC = Helper.ANGLE_CALC;
     protected PointList points;
-    protected final InstructionAnnotation annotation;
+    protected PointList mergedPoints = new PointList();
+
+
+    protected int mergedStraight = 0;
+    protected InstructionAnnotation annotation;
     protected boolean rawName;
     protected int sign;
+    protected TurnType turnType;
     protected String name;
     protected double distance;
     protected long time;
+    protected Map<Integer, double[]> nodes = new TreeMap<>();
     protected Map<String, Object> extraInfo = new HashMap<>(3);
 
+    private Instruction prevInstruction;
+
+
+    // RZU: Extra constructor just with sign used in determine correct modifier when dealing with USE_ROUNDABOUT
+    public Instruction(int sign) {
+        this.sign = sign;
+        this.turnType = TurnType.ROUNDABOUT_TURN;
+        this.annotation = InstructionAnnotation.EMPTY;
+    }
     /**
      * The points, distances and times have exactly the same count. The last point of this
      * instruction is not duplicated here and should be in the next one.
      */
-    public Instruction(int sign, String name, InstructionAnnotation ia, PointList pl) {
+    public Instruction(int sign, TurnType turnType, String name, InstructionAnnotation ia, PointList pl) {
+        this.turnType = turnType;
         this.sign = sign;
         this.name = name;
         this.points = pl;
@@ -74,6 +95,17 @@ public class Instruction {
     public InstructionAnnotation getAnnotation() {
         return annotation;
     }
+    public void setAnnotation(InstructionAnnotation instr) {
+        annotation = instr;
+    }
+
+    public Instruction getPrevInstruction() {
+        return prevInstruction;
+    }
+
+    public void setPrevInstruction(Instruction prevInstruction) {
+        this.prevInstruction = prevInstruction;
+    }
 
     /**
      * The instruction for the person/driver to execute.
@@ -86,6 +118,53 @@ public class Instruction {
         this.sign = sign;
     }
 
+
+    public TurnType getTurnType() {
+        return turnType;
+    }
+
+    public void setTurnType(TurnType turnType) {
+        this.turnType = turnType;
+    }
+
+
+    public boolean isCrossing() {
+        return crossing;
+    }
+
+    public void setCrossing(boolean crossing) {
+        this.crossing = crossing;
+    }
+
+    private boolean crossing = false;
+
+
+    /*
+    * instructie kan niet meer worden gefiltered indien true
+    * */
+    public boolean isForceKeep() {
+        return forceKeep;
+    }
+
+    public void setForceKeep(boolean forceKeep) {
+        this.forceKeep = forceKeep;
+        if (forceKeep)
+            setExtraInfo("force_keep", forceKeep);
+    }
+
+    private boolean forceKeep = false;
+
+
+    public WayType getWayType() {
+        return wayType;
+    }
+
+    public void setWayType(WayType wayType) {
+        this.wayType = wayType;
+    }
+
+    private WayType wayType;
+
     public String getName() {
         return name;
     }
@@ -93,6 +172,17 @@ public class Instruction {
     public void setName(String name) {
         this.name = name;
     }
+
+
+    public int getNrOfEdges() {
+        return nrOfEdges;
+    }
+
+    public void setNrOfEdges(int nrOfEdges) {
+        this.nrOfEdges = nrOfEdges;
+    }
+
+    private int nrOfEdges = 0;
 
     public Map<String, Object> getExtraInfoJSON() {
         return extraInfo;
@@ -102,6 +192,18 @@ public class Instruction {
         extraInfo.put(key, value);
     }
 
+    public Map<Integer, double[]> getNodes() {
+        return this.nodes;
+    }
+
+    public int getMergedStraight() {
+        return mergedStraight;
+    }
+
+    public void addNode(int nodeId, double[] latLng) {
+        if (! nodes.containsKey(nodeId))
+            nodes.put(nodeId, latLng);
+    }
     /**
      * Distance in meter until no new instruction
      */
@@ -126,6 +228,24 @@ public class Instruction {
         return this;
     }
 
+    /**
+     * Latitude of the location where this instruction should take place.
+     */
+    double getFirstLat() {
+        return points.getLatitude(0);
+    }
+
+    /**
+     * Longitude of the location where this instruction should take place.
+     */
+    double getFirstLon() {
+        return points.getLongitude(0);
+    }
+
+    double getFirstEle() {
+        return points.getElevation(0);
+    }
+
     /* This method returns the points associated to this instruction. Please note that it will not include the last point,
      * i.e. the first point of the next instruction object.
      */
@@ -137,23 +257,73 @@ public class Instruction {
         this.points = points;
     }
 
+    /**
+     * This method returns a list of gpx entries where the time (in time) is relative to the first
+     * which is 0. It does NOT contain the last point which is the first of the next instruction.
+     *
+     * @return the time offset to add for the next instruction
+     */
+    long fillGPXList(List<GPXEntry> list, long time,
+                     Instruction prevInstr, Instruction nextInstr, boolean firstInstr) {
+        checkOne();
+        int len = points.size();
+        long prevTime = time;
+        double lat = points.getLatitude(0);
+        double lon = points.getLongitude(0);
+        double ele = Double.NaN;
+        boolean is3D = points.is3D();
+        if (is3D)
+            ele = points.getElevation(0);
+
+        for (int i = 0; i < len; i++) {
+            list.add(new GPXEntry(lat, lon, ele, prevTime));
+
+            boolean last = i + 1 == len;
+            double nextLat = last ? nextInstr.getFirstLat() : points.getLatitude(i + 1);
+            double nextLon = last ? nextInstr.getFirstLon() : points.getLongitude(i + 1);
+            double nextEle = is3D ? (last ? nextInstr.getFirstEle() : points.getElevation(i + 1)) : Double.NaN;
+            if (is3D)
+                prevTime = Math.round(prevTime + this.time * Helper.DIST_3D.calcDist(nextLat, nextLon, nextEle, lat, lon, ele) / distance);
+            else
+                prevTime = Math.round(prevTime + this.time * Helper.DIST_3D.calcDist(nextLat, nextLon, lat, lon) / distance);
+
+            lat = nextLat;
+            lon = nextLon;
+            ele = nextEle;
+        }
+        return time + this.time;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append('(');
-        sb.append(sign).append(',');
-        sb.append(name).append(',');
-        sb.append(distance).append(',');
-        sb.append(time);
+        sb.append("sign: ").append(sign).append(", ");
+        sb.append("turn: ").append(turnType.getValue()).append(", ");
+        sb.append("name: ").append(name).append(", ");
+        sb.append("distance: ").append(distance).append(", ");
+        sb.append("time: ").append(time).append(", ");
+        sb.append("wkt: ").append((new WKTWriter()).write(points.toLineString(false))).append(" ");
+
+        if (!extraInfo.isEmpty()) {
+            for (String s : extraInfo.keySet()) {
+               sb.append(s).append(": ").append(extraInfo.get(s)).append(", ");
+            }
+
+        }
+
         sb.append(')');
         return sb.toString();
+    }
+    public String toWkt() {
+        return (new WKTWriter()).write(points.toLineString(false));
     }
 
     /**
      * Return the direction like 'NE' based on the first tracksegment of the instruction. If
      * Instruction does not contain enough coordinate points, an empty string will be returned.
      */
-    public String calcDirection(Instruction nextI) {
+    String calcDirection(Instruction nextI) {
         double azimuth = calcAzimuth(nextI);
         if (Double.isNaN(azimuth))
             return "";
@@ -185,6 +355,11 @@ public class Instruction {
         return AC.calcAzimuth(lat, lon, nextLat, nextLon);
     }
 
+    void checkOne() {
+        if (points.size() < 1)
+            throw new IllegalStateException("Instruction must contain at least one point " + toString());
+    }
+
     /**
      * This method returns the length of an Instruction. The length of an instruction is defined by [the
      * index of the first point of the next instruction] - [the index of the first point of this instruction].
@@ -205,8 +380,9 @@ public class Instruction {
 
         String str;
         String streetName = getName();
+
         int indi = getSign();
-        if (indi == Instruction.CONTINUE_ON_STREET) {
+        if (indi == Instruction.STRAIGHT) {
             str = Helper.isEmpty(streetName) ? tr.tr("continue") : tr.tr("continue_onto", streetName);
         } else if (indi == Instruction.PT_START_TRIP) {
             str = tr.tr("pt_start_trip", streetName);
@@ -217,38 +393,29 @@ public class Instruction {
         } else {
             String dir = null;
             switch (indi) {
-                case Instruction.U_TURN_UNKNOWN:
-                    dir = tr.tr("u_turn");
-                    break;
                 case Instruction.U_TURN_LEFT:
                     dir = tr.tr("u_turn");
                     break;
                 case Instruction.U_TURN_RIGHT:
                     dir = tr.tr("u_turn");
                     break;
-                case Instruction.KEEP_LEFT:
-                    dir = tr.tr("keep_left");
-                    break;
-                case Instruction.TURN_SHARP_LEFT:
+                case Instruction.SHARP_LEFT:
                     dir = tr.tr("turn_sharp_left");
                     break;
-                case Instruction.TURN_LEFT:
+                case Instruction.LEFT:
                     dir = tr.tr("turn_left");
                     break;
-                case Instruction.TURN_SLIGHT_LEFT:
+                case Instruction.SLIGHT_LEFT:
                     dir = tr.tr("turn_slight_left");
                     break;
-                case Instruction.TURN_SLIGHT_RIGHT:
+                case Instruction.SLIGHT_RIGHT:
                     dir = tr.tr("turn_slight_right");
                     break;
-                case Instruction.TURN_RIGHT:
+                case Instruction.RIGHT:
                     dir = tr.tr("turn_right");
                     break;
-                case Instruction.TURN_SHARP_RIGHT:
+                case Instruction.SHARP_RIGHT:
                     dir = tr.tr("turn_sharp_right");
-                    break;
-                case Instruction.KEEP_RIGHT:
-                    dir = tr.tr("keep_right");
                     break;
             }
             if (dir == null)
@@ -258,4 +425,8 @@ public class Instruction {
         }
         return str;
     }
+
+
+
+
 }

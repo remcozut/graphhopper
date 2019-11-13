@@ -34,6 +34,7 @@ public class Constants {
      */
     public static final String JAVA_VERSION = System.getProperty("java.version");
 
+
     /**
      * The value of <tt>System.getProperty("os.name")</tt>. *
      */
@@ -67,8 +68,8 @@ public class Constants {
     private static final int JVM_MINOR_VERSION;
 
     public static final int VERSION_NODE = 5;
-    public static final int VERSION_EDGE = 15;
-    public static final int VERSION_SHORTCUT = 5;
+    public static final int VERSION_EDGE = 14;
+    public static final int VERSION_SHORTCUT = 2;
     public static final int VERSION_GEOMETRY = 4;
     public static final int VERSION_LOCATION_IDX = 3;
     public static final int VERSION_NAME_IDX = 3;
@@ -76,11 +77,11 @@ public class Constants {
      * The version without the snapshot string
      */
     public static final String VERSION;
+
+    public static final int VERSIONCODE = 2;
+
     public static final String BUILD_DATE;
-    /**
-     * Details about the git commit this artifact was build for, can be null (if not build using maven)
-     */
-    public static final GitInfo GIT_INFO;
+    public static final String GIT_INFO;
     public static final boolean SNAPSHOT;
 
     static {
@@ -128,18 +129,17 @@ public class Constants {
         }
         BUILD_DATE = buildDate;
 
-        List<String> gitInfos = null;
+        String gitInfo = "";
         try {
-            gitInfos = readFile(new InputStreamReader(GraphHopper.class.getResourceAsStream("gitinfo"), UTF_CS));
-            if (gitInfos.size() != 6) {
+            List<String> gitInfos = readFile(new InputStreamReader(GraphHopper.class.getResourceAsStream("gitinfo"), UTF_CS));
+            if (gitInfos.size() == 5) {
+                gitInfo = gitInfos.get(1) + "|" + gitInfos.get(2) + "|dirty=" + gitInfos.get(3) + "|" + gitInfos.get(4);
+            } else {
                 System.err.println("GraphHopper Initialization WARNING: unexpected git info: " + gitInfos.toString());
-                gitInfos = null;
-            } else if (gitInfos.get(1).startsWith("$")) {
-                gitInfos = null;
             }
         } catch (Exception ex) {
         }
-        GIT_INFO = gitInfos == null ? null : new GitInfo(gitInfos.get(1), gitInfos.get(2), gitInfos.get(3), gitInfos.get(4), Boolean.parseBoolean(gitInfos.get(5)));
+        GIT_INFO = gitInfo;
     }
 
     public static String getVersions() {

@@ -59,7 +59,7 @@ public class SRTMProviderTest {
     @Test
     public void testGetHeight() throws IOException {
         instance = new SRTMProvider("./files/");
-        // easy to verify orientation of tile:
+        // easy to verify heading of tile:
 //        instance.getEle(43, 13);
 
         // siegesturm

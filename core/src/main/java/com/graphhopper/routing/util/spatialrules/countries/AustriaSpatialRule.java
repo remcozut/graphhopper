@@ -17,8 +17,6 @@
  */
 package com.graphhopper.routing.util.spatialrules.countries;
 
-import com.graphhopper.routing.profiles.Country;
-import com.graphhopper.routing.profiles.RoadAccess;
 import com.graphhopper.routing.util.spatialrules.DefaultSpatialRule;
 import com.graphhopper.routing.util.spatialrules.TransportationMode;
 
@@ -31,6 +29,7 @@ public class AustriaSpatialRule extends DefaultSpatialRule {
 
     @Override
     public double getMaxSpeed(String highwayTag, double _default) {
+
         // As defined in: https://wiki.openstreetmap.org/wiki/OSM_tags_for_routing/Maxspeed#Motorcar
         switch (highwayTag) {
             case "trunk":
@@ -43,12 +42,10 @@ public class AustriaSpatialRule extends DefaultSpatialRule {
     }
 
     @Override
-    public RoadAccess getAccess(String highwayTag, TransportationMode transportationMode, RoadAccess _default) {
+    public Access getAccess(String highwayTag, TransportationMode transportationMode, Access _default) {
         if (transportationMode == TransportationMode.MOTOR_VEHICLE) {
             if (highwayTag.equals("living_street"))
-                return RoadAccess.DESTINATION;
-            if (highwayTag.equals("track"))
-                return RoadAccess.FORESTRY;
+                return Access.CONDITIONAL;
         }
 
         return super.getAccess(highwayTag, transportationMode, _default);
@@ -56,6 +53,6 @@ public class AustriaSpatialRule extends DefaultSpatialRule {
 
     @Override
     public String getId() {
-        return Country.AUT.toString();
+        return "AUT";
     }
 }

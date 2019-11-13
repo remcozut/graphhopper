@@ -18,11 +18,10 @@
 package com.graphhopper.storage;
 
 import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.routing.weighting.Weighting;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * For now this is just a helper class to quickly create a {@link GraphHopperStorage}
@@ -36,27 +35,20 @@ public class GraphBuilder {
     private boolean mmap;
     private boolean store;
     private boolean elevation;
-    private boolean turnCosts;
+    private boolean edgeBasedCH;
     private long byteCapacity = 100;
-    private List<CHProfile> chProfiles = Collections.emptyList();
+    private Weighting singleCHWeighting;
 
     public GraphBuilder(EncodingManager encodingManager) {
         this.encodingManager = encodingManager;
     }
 
     /**
-     * This method enables creating CHGraphs with the specified CHProfiles
+     * This method enables creating a CHGraph with the specified weighting.
      */
-    public GraphBuilder setCHProfiles(List<CHProfile> chProfiles) {
-        if (chProfiles.size() != new HashSet<>(chProfiles).size()) {
-            throw new IllegalArgumentException("Given CH profiles contain duplicates, given: " + chProfiles);
-        }
-        this.chProfiles = chProfiles;
+    public GraphBuilder setCHGraph(Weighting singleCHWeighting) {
+        this.singleCHWeighting = singleCHWeighting;
         return this;
-    }
-
-    public GraphBuilder setCHProfiles(CHProfile... chProfiles) {
-        return setCHProfiles(Arrays.asList(chProfiles));
     }
 
     public GraphBuilder setLocation(String location) {
@@ -84,8 +76,8 @@ public class GraphBuilder {
         return this;
     }
 
-    public GraphBuilder withTurnCosts(boolean turnCosts) {
-        this.turnCosts = turnCosts;
+    public GraphBuilder setEdgeBasedCH(boolean edgeBasedCH) {
+        this.edgeBasedCH = edgeBasedCH;
         return this;
     }
 
@@ -96,22 +88,29 @@ public class GraphBuilder {
     /**
      * Creates a CHGraph
      */
-    public CHGraph chGraphCreate(CHProfile chProfile) {
-        return setCHProfiles(chProfile).create().getCHGraph();
+    public CHGraph chGraphCreate(Weighting singleCHWeighting) {
+        return setCHGraph(singleCHWeighting).create().getGraph(CHGraph.class, singleCHWeighting);
     }
 
     /**
      * Default graph is a {@link GraphHopperStorage} with an in memory directory and disabled storing on flush.
      * Afterwards you'll need to call {@link GraphHopperStorage#create} to have a usable object. Better use
-     * {@link #create} directly.
+     * {@link GraphHopperStorage#create} directly.
      */
     public GraphHopperStorage build() {
         Directory dir = mmap ?
                 new MMapDirectory(location) :
                 new RAMDirectory(location, store);
 
-        boolean withTurnCosts = encodingManager.needsTurnCostsSupport() || turnCosts;
-        return new GraphHopperStorage(chProfiles, dir, encodingManager, elevation, withTurnCosts);
+        GraphExtension graphExtension = encodingManager.needsTurnCostsSupport() ?
+                new TurnCostExtension() :
+                new TurnCostExtension.NoOpExtension();
+
+        return singleCHWeighting == null ?
+                new GraphHopperStorage(dir, encodingManager, elevation, graphExtension) :
+                edgeBasedCH ?
+                        new GraphHopperStorage(Collections.<Weighting>emptyList(), Arrays.asList(singleCHWeighting), dir, encodingManager, elevation, graphExtension) :
+                        new GraphHopperStorage(Arrays.asList(singleCHWeighting), Collections.<Weighting>emptyList(), dir, encodingManager, elevation, graphExtension);
     }
 
     /**

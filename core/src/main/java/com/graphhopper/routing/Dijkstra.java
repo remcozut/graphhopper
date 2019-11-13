@@ -74,17 +74,16 @@ public class Dijkstra extends AbstractRoutingAlgorithm {
             if (isMaxVisitedNodesExceeded() || finished())
                 break;
 
-            int currNode = currEdge.adjNode;
-            EdgeIterator iter = explorer.setBaseNode(currNode);
+            int startNode = currEdge.adjNode;
+            EdgeIterator iter = explorer.setBaseNode(startNode);
             while (iter.next()) {
                 if (!accept(iter, currEdge.edge))
                     continue;
 
-                double tmpWeight = weighting.calcWeight(iter, false, currEdge.edge) + currEdge.weight;
-                if (Double.isInfinite(tmpWeight)) {
-                    continue;
-                }
                 int traversalId = traversalMode.createTraversalId(iter, false);
+                double tmpWeight = weighting.calcWeight(iter, false, currEdge.edge) + currEdge.weight;
+                if (Double.isInfinite(tmpWeight))
+                    continue;
 
                 SPTEntry nEdge = fromMap.get(traversalId);
                 if (nEdge == null) {
@@ -123,7 +122,8 @@ public class Dijkstra extends AbstractRoutingAlgorithm {
         if (currEdge == null || !finished())
             return createEmptyPath();
 
-        return PathExtractor.extractPath(graph, weighting, currEdge);
+        return new Path(graph, weighting).
+                setWeight(currEdge.weight).setSPTEntry(currEdge).extract();
     }
 
     @Override

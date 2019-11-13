@@ -34,8 +34,8 @@ public class InstructionTest {
 
         PointList nextPl = new PointList();
         nextPl.add(49.942, 11.582);
-        Instruction currI = new Instruction(Instruction.CONTINUE_ON_STREET, "temp", ea, pl);
-        Instruction nextI = new Instruction(Instruction.CONTINUE_ON_STREET, "next", ea, nextPl);
+        Instruction currI = new Instruction(Instruction.STRAIGHT, TurnType.CONTINUE, "temp", ea, pl);
+        Instruction nextI = new Instruction(Instruction.STRAIGHT,TurnType.CONTINUE, "next", ea, nextPl);
 
         assertEquals(270, currI.calcAzimuth(nextI), .1);
         assertEquals("W", currI.calcDirection(nextI));
@@ -43,7 +43,7 @@ public class InstructionTest {
         PointList p2 = new PointList();
         p2.add(49.942, 11.580);
         p2.add(49.944, 11.582);
-        Instruction i2 = new Instruction(Instruction.CONTINUE_ON_STREET, "temp", ea, p2);
+        Instruction i2 = new Instruction(Instruction.STRAIGHT, TurnType.CONTINUE, "temp", ea, p2);
 
         assertEquals(32.76, i2.calcAzimuth(null), .1);
         assertEquals("NE", i2.calcDirection(null));
@@ -51,7 +51,7 @@ public class InstructionTest {
         PointList p3 = new PointList();
         p3.add(49.942, 11.580);
         p3.add(49.944, 11.580);
-        Instruction i3 = new Instruction(Instruction.CONTINUE_ON_STREET, "temp", ea, p3);
+        Instruction i3 = new Instruction(Instruction.STRAIGHT, TurnType.CONTINUE, "temp", ea, p3);
 
         assertEquals(0, i3.calcAzimuth(null), .1);
         assertEquals("N", i3.calcDirection(null));
@@ -59,13 +59,13 @@ public class InstructionTest {
         PointList p4 = new PointList();
         p4.add(49.940, 11.580);
         p4.add(49.920, 11.586);
-        Instruction i4 = new Instruction(Instruction.CONTINUE_ON_STREET, "temp", ea, p4);
+        Instruction i4 = new Instruction(Instruction.STRAIGHT, TurnType.CONTINUE, "temp", ea, p4);
 
         assertEquals("S", i4.calcDirection(null));
 
         PointList p5 = new PointList();
         p5.add(49.940, 11.580);
-        Instruction i5 = new Instruction(Instruction.CONTINUE_ON_STREET, "temp", ea, p5);
+        Instruction i5 = new Instruction(Instruction.STRAIGHT, TurnType.CONTINUE, "temp", ea, p5);
 
         assertTrue(Double.isNaN(i5.calcAzimuth(null)));
         assertEquals("", i5.calcDirection(null));

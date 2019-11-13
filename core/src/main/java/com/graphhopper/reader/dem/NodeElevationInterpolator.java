@@ -22,7 +22,7 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.PointList;
 
 /**
- * Interpolates elevations of pillar nodes based on elevations of tower nodes.
+ * Interpolates elevations of inner nodes based on elevations of outer nodes.
  *
  * @author Alexey Valikov
  */

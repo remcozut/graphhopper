@@ -19,7 +19,6 @@ package com.graphhopper.reader.gtfs;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Date;
 import java.util.Locale;
 
@@ -48,11 +47,7 @@ public class GtfsHelper {
     }
     
     public static int time(LocalDateTime localDateTime) {
-        return time(localDateTime.getHour(), localDateTime.getMinute(), localDateTime.getSecond());
-    }
-
-    public static int time(LocalTime localTime) {
-        return time(localTime.getHour(), localTime.getMinute(), localTime.getSecond());
+        return time(localDateTime.getHour(), localDateTime.getMinute(), 0);
     }
 
     public static LocalDateTime localDateTimeFromDate(Date date) {

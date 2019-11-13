@@ -42,6 +42,7 @@ public final class ShallowImmutablePointList extends PointList {
         this.wrappedPointList = wrappedPointList;
     }
 
+
     @Override
     public int size() {
         return toOffset - fromOffset;

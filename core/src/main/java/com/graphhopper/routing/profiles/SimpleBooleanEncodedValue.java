@@ -20,9 +20,12 @@ package com.graphhopper.routing.profiles;
 import com.graphhopper.storage.IntsRef;
 
 /**
- * This class implements a simple boolean storage via an UnsignedIntEncodedValue with 1 bit.
+ * This class implements a simple Boolean storage via a FactoredIntEncodedValue with 1 bit.
  */
-public final class SimpleBooleanEncodedValue extends UnsignedIntEncodedValue implements BooleanEncodedValue {
+public final class SimpleBooleanEncodedValue extends SimpleIntEncodedValue implements BooleanEncodedValue {
+
+    private SimpleBooleanEncodedValue() {
+    }
 
     public SimpleBooleanEncodedValue(String name) {
         this(name, false);
@@ -34,7 +37,7 @@ public final class SimpleBooleanEncodedValue extends UnsignedIntEncodedValue imp
 
     @Override
     public final void setBool(boolean reverse, IntsRef ref, boolean value) {
-        if (storeTwoDirections && reverse) {
+        if (storeBothDirections && reverse) {
             int flags = ref.ints[bwdDataIndex + ref.offset];
             flags &= ~bwdMask;
             // set value
@@ -54,7 +57,7 @@ public final class SimpleBooleanEncodedValue extends UnsignedIntEncodedValue imp
     @Override
     public final boolean getBool(boolean reverse, IntsRef ref) {
         int flags;
-        if (storeTwoDirections && reverse) {
+        if (storeBothDirections && reverse) {
             flags = ref.ints[bwdDataIndex + ref.offset];
             return (flags & bwdMask) >>> bwdShift == 1;
         }

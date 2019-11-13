@@ -292,9 +292,9 @@ public class RoutingAlgorithmWithOSMIT {
     public void testNorthBayreuthHikeFastestAnd3D() {
         List<OneRun> list = new ArrayList<>();
         // prefer hiking route 'Teufelsloch Unterwaiz' and 'Rotmain-Wanderweg'        
-        list.add(new OneRun(49.974972, 11.515657, 49.991022, 11.512299, 2384, 93));
+        list.add(new OneRun(49.974972, 11.515657, 49.991022, 11.512299, 2365, 66));
         // prefer hiking route 'Markgrafenweg Bayreuth Kulmbach' but avoid tertiary highway from Pechgraben
-        list.add(new OneRun(49.990967, 11.545258, 50.023182, 11.555386, 4746, 119));
+        list.add(new OneRun(49.990967, 11.545258, 50.023182, 11.555386, 5636, 97));
         runAlgo(testCollector, DIR + "/north-bayreuth.osm.gz", "target/north-bayreuth-gh",
                 list, "hike", true, "hike", "fastest", true);
         assertEquals(testCollector.toString(), 0, testCollector.errors.size());
@@ -556,7 +556,7 @@ public class RoutingAlgorithmWithOSMIT {
                     setCHEnabled(withCH).
                     setDataReaderFile(osmFile).
                     setGraphHopperLocation(graphFile).
-                    setEncodingManager(new EncodingManager.Builder().addAll(new DefaultFlagEncoderFactory(), importVehicles).build());
+                    setEncodingManager(new EncodingManager.Builder(8).addAll(new DefaultFlagEncoderFactory(), importVehicles).build());
 
             if (osmFile.contains("krautsand"))
                 hopper.setMinNetworkSize(0, 0);
@@ -569,7 +569,7 @@ public class RoutingAlgorithmWithOSMIT {
 
             if (withCH)
                 hopper.getCHFactoryDecorator().
-                        addCHProfileAsString(weightStr).
+                        addWeighting(weightStr).
                         setEnabled(true).
                         setEdgeBasedCHMode(CHAlgoFactoryDecorator.EdgeBasedCHMode.EDGE_OR_NODE).
                         setDisablingAllowed(true);
@@ -580,7 +580,7 @@ public class RoutingAlgorithmWithOSMIT {
             hopper.importOrLoad();
 
             TraversalMode tMode = importVehicles.contains("turn_costs=true")
-                    ? TraversalMode.EDGE_BASED : TraversalMode.NODE_BASED;
+                    ? TraversalMode.EDGE_BASED_2DIR : TraversalMode.NODE_BASED;
             FlagEncoder encoder = hopper.getEncodingManager().getEncoder(vehicle);
             HintsMap hints = new HintsMap().setWeighting(weightStr).setVehicle(vehicle);
 

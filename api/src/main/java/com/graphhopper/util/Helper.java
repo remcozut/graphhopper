@@ -20,8 +20,6 @@ package com.graphhopper.util;
 import com.graphhopper.util.shapes.BBox;
 
 import java.io.*;
-import java.lang.management.GarbageCollectorMXBean;
-import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.charset.Charset;
@@ -32,9 +30,17 @@ import java.util.*;
 import java.util.Map.Entry;
 
 /**
+ *
  * @author Peter Karich
  */
 public class Helper {
+
+    public static final int MAX_INSTRUCTION_DISTANCE_THRESHOLD = 50;
+    public static final int MIN_INSTRUCTION_DISTANCE_THRESHOLD = 15;
+    public static final int MAX_MERGE_STRAIGHT_DISTANCE = 500;
+
+
+
     public static final DistanceCalc DIST_EARTH = new DistanceCalcEarth();
     public static final DistanceCalc3D DIST_3D = new DistanceCalc3D();
     public static final DistancePlaneProjection DIST_PLANE = new DistancePlaneProjection();
@@ -63,11 +69,11 @@ public class Helper {
         return new Locale(param.substring(0, index), param.substring(index + 1));
     }
 
-    public static String toLowerCase(String string) {
+    public static String toLowerCase(String string){
         return string.toLowerCase(Locale.ROOT);
     }
 
-    public static String toUpperCase(String string) {
+    public static String toUpperCase(String string){
         return string.toUpperCase(Locale.ROOT);
     }
 
@@ -173,29 +179,6 @@ public class Helper {
 
     public static String getMemInfo() {
         return "totalMB:" + getTotalMB() + ", usedMB:" + getUsedMB();
-    }
-
-    public static int getUsedMBAfterGC() {
-        long before = getTotalGcCount();
-        // trigger gc
-        System.gc();
-        while (getTotalGcCount() == before) {
-            // wait for the gc to have completed
-        }
-        long result = (ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed() +
-                ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage().getUsed()) / (1024 * 1024);
-        return (int) result;
-    }
-
-    private static long getTotalGcCount() {
-        long sum = 0;
-        for (GarbageCollectorMXBean b : ManagementFactory.getGarbageCollectorMXBeans()) {
-            long count = b.getCollectionCount();
-            if (count != -1) {
-                sum += count;
-            }
-        }
-        return sum;
     }
 
     public static int getSizeOfObjectRef(int factor) {
@@ -339,6 +322,15 @@ public class Helper {
         return integEle / ELE_FACTOR;
     }
 
+
+    /**
+     * Trying to force the release of the mapped ByteBuffer. See
+     * http://stackoverflow.com/q/2972986/194609 and use only if you know what you are doing.
+     */
+    public static void cleanHack() {
+        System.gc();
+    }
+
     public static String nf(long no) {
         // I like french localization the most: 123654 will be 123 654 instead
         // of comma vs. point confusion for English/German people.
@@ -446,20 +438,6 @@ public class Helper {
                 sb.append(c);
         }
 
-        return sb.toString();
-    }
-
-    /**
-     * Equivalent to java 8 String#join
-     */
-    public static String join(String delimiter, List<String> strings) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < strings.size(); i++) {
-            if (i > 0) {
-                sb.append(delimiter);
-            }
-            sb.append(strings.get(i));
-        }
         return sb.toString();
     }
 }

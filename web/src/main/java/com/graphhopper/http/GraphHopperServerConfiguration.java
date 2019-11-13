@@ -19,9 +19,6 @@
 package com.graphhopper.http;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.graphhopper.gtfs.dropwizard.RealtimeBundleConfiguration;
-import com.graphhopper.gtfs.dropwizard.FeedConfiguration;
-import com.graphhopper.gtfs.dropwizard.RealtimeConfiguration;
 import com.graphhopper.util.CmdArgs;
 import io.dropwizard.Configuration;
 import io.dropwizard.bundles.assets.AssetsBundleConfiguration;
@@ -29,10 +26,8 @@ import io.dropwizard.bundles.assets.AssetsConfiguration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
 
-public class GraphHopperServerConfiguration extends Configuration implements GraphHopperBundleConfiguration, RealtimeBundleConfiguration, AssetsBundleConfiguration {
+public class GraphHopperServerConfiguration extends Configuration implements GraphHopperBundleConfiguration, AssetsBundleConfiguration {
 
     @NotNull
     @JsonProperty
@@ -41,9 +36,6 @@ public class GraphHopperServerConfiguration extends Configuration implements Gra
     @Valid
     @JsonProperty
     private final AssetsConfiguration assets = AssetsConfiguration.builder().build();
-
-    @JsonProperty
-    private final RealtimeConfiguration gtfsRealtime = new RealtimeConfiguration();
 
     public GraphHopperServerConfiguration() {
     }
@@ -56,10 +48,5 @@ public class GraphHopperServerConfiguration extends Configuration implements Gra
     @Override
     public AssetsConfiguration getAssetsConfiguration() {
         return assets;
-    }
-
-    @Override
-    public RealtimeConfiguration gtfsrealtime() {
-        return gtfsRealtime;
     }
 }

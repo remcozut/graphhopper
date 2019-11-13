@@ -1,7 +1,6 @@
 package com.graphhopper.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.graphhopper.jackson.PathWrapperDeserializer;
 import com.graphhopper.util.Helper;
 import com.graphhopper.util.shapes.GHPoint;
 import okhttp3.OkHttpClient;
@@ -9,6 +8,7 @@ import okhttp3.OkHttpClient;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Peter Karich
@@ -20,13 +20,15 @@ public class GHMatrixSyncRequester extends GHMatrixAbstractRequester {
         initIgnore();
     }
 
-    public GHMatrixSyncRequester(String serviceUrl) {
-        super(serviceUrl);
+    public GHMatrixSyncRequester(String serviceUrl, OkHttpClient client) {
+        super(serviceUrl, client);
         initIgnore();
     }
 
-    public GHMatrixSyncRequester(String serviceUrl, OkHttpClient client) {
-        super(serviceUrl, client);
+    public GHMatrixSyncRequester(String serviceUrl) {
+        super(serviceUrl, new OkHttpClient.Builder().
+                connectTimeout(15, TimeUnit.SECONDS).
+                readTimeout(15, TimeUnit.SECONDS).build());
         initIgnore();
     }
 
@@ -42,22 +44,31 @@ public class GHMatrixSyncRequester extends GHMatrixAbstractRequester {
 
     @Override
     public MatrixResponse route(GHMRequest ghRequest) {
+        StringBuilder pointHintsStr = new StringBuilder();
+
         String pointsStr;
-        String pointHintsStr;
-        String curbsidesStr;
         if (ghRequest.identicalLists) {
-            pointsStr = createPointQuery("point", ghRequest.getFromPoints());
-            pointHintsStr = createUrlString("point_hint", ghRequest.getFromPointHints());
-            curbsidesStr = createUrlString("curbside", ghRequest.getFromCurbsides());
+            pointsStr = createPointQuery(ghRequest.getFromPoints(), "point");
+
+            for (String hint : ghRequest.getFromPointHints()) {
+                if (pointHintsStr.length() > 0)
+                    pointHintsStr.append("&");
+                pointHintsStr.append("point_hint=").append(encode(hint));
+            }
         } else {
-            pointsStr = createPointQuery("from_point", ghRequest.getFromPoints());
-            pointsStr += "&" + createPointQuery("to_point", ghRequest.getToPoints());
+            pointsStr = createPointQuery(ghRequest.getFromPoints(), "from_point");
+            pointsStr += "&" + createPointQuery(ghRequest.getToPoints(), "to_point");
 
-            pointHintsStr = createUrlString("from_point_hint", ghRequest.getFromPointHints());
-            pointHintsStr += "&" + createUrlString("to_point_hint", ghRequest.getToPointHints());
-
-            curbsidesStr = createUrlString("from_curbside", ghRequest.getFromCurbsides());
-            curbsidesStr += "&" + createUrlString("to_curbside", ghRequest.getToCurbsides());
+            for (String hint : ghRequest.getFromPointHints()) {
+                if (pointHintsStr.length() > 0)
+                    pointHintsStr.append("&");
+                pointHintsStr.append("from_point_hint=").append(encode(hint));
+            }
+            for (String hint : ghRequest.getToPointHints()) {
+                if (pointHintsStr.length() > 0)
+                    pointHintsStr.append("&");
+                pointHintsStr.append("to_point_hint=").append(encode(hint));
+            }
         }
 
         String outArrayStr = "";
@@ -67,26 +78,15 @@ public class GHMatrixSyncRequester extends GHMatrixAbstractRequester {
         }
 
         for (String type : outArraysList) {
-            if (!type.isEmpty())
+            if (!type.isEmpty()) {
                 outArrayStr += "&";
+            }
 
             outArrayStr += "out_array=" + type;
         }
 
-        String snapPreventionStr = "";
-        for (String snapPrevention : ghRequest.getSnapPreventions()) {
-            if (!snapPreventionStr.isEmpty())
-                snapPreventionStr += "&";
-
-            snapPreventionStr += "snap_prevention=" + snapPrevention;
-        }
-
         String url = buildURL("", ghRequest);
-        url += "&" + pointsStr + "&" + pointHintsStr + "&" + curbsidesStr + "&" + outArrayStr + "&" + snapPreventionStr;
-        if (!Helper.isEmpty(ghRequest.getVehicle())) {
-            url += "&vehicle=" + ghRequest.getVehicle();
-        }
-        url += "&fail_fast=" + ghRequest.getFailFast();
+        url += "&" + pointsStr + "&" + pointHintsStr + "&" + outArrayStr + "&vehicle=" + ghRequest.getVehicle();
 
         boolean withTimes = outArraysList.contains("times");
         boolean withDistances = outArraysList.contains("distances");
@@ -99,13 +99,13 @@ public class GHMatrixSyncRequester extends GHMatrixAbstractRequester {
             String str = getJson(url);
             JsonNode getResponseJson = objectMapper.reader().readTree(str);
 
-            matrixResponse.addErrors(PathWrapperDeserializer.readErrors(objectMapper, getResponseJson));
+            matrixResponse.addErrors(readErrors(getResponseJson));
             if (!matrixResponse.hasErrors()) {
                 matrixResponse.addErrors(readUsableEntityError(outArraysList, getResponseJson));
             }
 
             if (!matrixResponse.hasErrors())
-                fillResponseFromJson(matrixResponse, getResponseJson, ghRequest.getFailFast());
+                fillResponseFromJson(matrixResponse, getResponseJson);
 
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -114,17 +114,7 @@ public class GHMatrixSyncRequester extends GHMatrixAbstractRequester {
         return matrixResponse;
     }
 
-    private String createUrlString(String paramName, List<String> params) {
-        StringBuilder result = new StringBuilder();
-        for (String param : params) {
-            if (result.length() > 0)
-                result.append("&");
-            result.append(paramName).append('=').append(encode(param));
-        }
-        return result.toString();
-    }
-
-    private String createPointQuery(String pointName, List<GHPoint> list) {
+    private String createPointQuery(List<GHPoint> list, String pointName) {
         StringBuilder pointsStr = new StringBuilder();
         for (GHPoint p : list) {
             if (pointsStr.length() > 0)

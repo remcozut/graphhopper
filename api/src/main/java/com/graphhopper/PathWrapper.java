@@ -44,9 +44,8 @@ public class PathWrapper {
     private PointList waypointList = PointList.EMPTY;
     private PointList pointList = PointList.EMPTY;
     private int numChanges;
-    private final List<Trip.Leg> legs = new ArrayList<>(5);
-    private final List<Integer> pointsOrder = new ArrayList<>(5);
-    private final Map<String, List<PathDetail>> pathDetails = new HashMap<>();
+    private final List<Trip.Leg> legs = new ArrayList<>();
+    private Map<String, List<PathDetail>> pathDetails = new HashMap<>();
     private BigDecimal fare;
     private boolean impossible = false;
 
@@ -78,16 +77,6 @@ public class PathWrapper {
 
     public String getDebugInfo() {
         return debugInfo;
-    }
-
-    public PathWrapper setPointsOrder(List<Integer> list) {
-        pointsOrder.clear();
-        pointsOrder.addAll(list);
-        return this;
-    }
-
-    public List<Integer> getPointsOrder() {
-        return pointsOrder;
     }
 
     /**
@@ -273,10 +262,7 @@ public class PathWrapper {
         // Make sure that the PathDetail list is merged correctly at via points
         if (!pathDetails.isEmpty() && !otherDetails.isEmpty()) {
             PathDetail lastDetail = pathDetails.get(pathDetails.size() - 1);
-            boolean extend = lastDetail.getValue() != null
-                    ? lastDetail.getValue().equals(otherDetails.get(0).getValue())
-                    : otherDetails.get(0).getValue() != null;
-            if (extend) {
+            if (lastDetail.getValue().equals(otherDetails.get(0).getValue())) {
                 lastDetail.setLast(otherDetails.get(0).getLast());
                 otherDetails.remove(0);
             }

@@ -18,10 +18,7 @@
 
 package com.graphhopper.reader.gtfs;
 
-import com.graphhopper.routing.profiles.BooleanEncodedValue;
-import com.graphhopper.routing.profiles.DecimalEncodedValue;
-import com.graphhopper.routing.profiles.EnumEncodedValue;
-import com.graphhopper.routing.profiles.IntEncodedValue;
+import com.graphhopper.routing.profiles.*;
 import com.graphhopper.routing.util.AllEdgesIterator;
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.storage.*;
@@ -167,6 +164,17 @@ class GraphSupport {
                     }
 
                     @Override
+                    public int getAdditionalField() {
+                        return edge.getAdditionalField();
+                    }
+
+                    @Override
+                    public EdgeIteratorState setAdditionalField(int value) {
+                        edge.setAdditionalField(value);
+                        return this;
+                    }
+
+                    @Override
                     public String getName() {
                         return edge.getName();
                     }
@@ -176,6 +184,7 @@ class GraphSupport {
                         edge.setName(name);
                         return this;
                     }
+
 
                     @Override
                     public EdgeIteratorState detach(boolean reverse) {
@@ -249,23 +258,23 @@ class GraphSupport {
                     }
 
                     @Override
-                    public <T extends Enum> T get(EnumEncodedValue<T> property) {
+                    public IndexBased get(ObjectEncodedValue property) {
                         return edge.get(property);
                     }
 
                     @Override
-                    public <T extends Enum> EdgeIteratorState set(EnumEncodedValue<T> property, T value) {
+                    public EdgeIteratorState set(ObjectEncodedValue property, IndexBased value) {
                         edge.set(property, value);
                         return this;
                     }
 
                     @Override
-                    public <T extends Enum> T getReverse(EnumEncodedValue<T> property) {
+                    public IndexBased getReverse(ObjectEncodedValue property) {
                         return edge.getReverse(property);
                     }
 
                     @Override
-                    public <T extends Enum> EdgeIteratorState setReverse(EnumEncodedValue<T> property, T value) {
+                    public EdgeIteratorState setReverse(ObjectEncodedValue property, IndexBased value) {
                         edge.setReverse(property, value);
                         return this;
                     }
@@ -293,17 +302,12 @@ class GraphSupport {
             }
 
             @Override
-            public TurnCostExtension getTurnCostExtension() {
+            public GraphExtension getExtension() {
                 throw new UnsupportedOperationException();
             }
 
             @Override
             public int getOtherNode(int edge, int node) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public boolean isAdjacentToNode(int edge, int node) {
                 throw new UnsupportedOperationException();
             }
         };

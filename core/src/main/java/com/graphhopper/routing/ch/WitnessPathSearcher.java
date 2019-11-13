@@ -183,7 +183,7 @@ public class WitnessPathSearcher {
         while (inIter.next()) {
             final int incEdge = inIter.getOrigEdgeLast();
             final int edgeKey = getEdgeKey(incEdge, targetNode);
-            if (EdgeIterator.Edge.isValid(edges[edgeKey])) {
+            if (edges[edgeKey] != NO_EDGE) {
                 boolean isZeroWeightLoop = parents[edgeKey] >= 0 && targetNode == adjNodes[parents[edgeKey]] &&
                         weights[edgeKey] - weights[parents[edgeKey]] <= MAX_ZERO_WEIGHT_LOOP;
                 if (!isZeroWeightLoop) {
@@ -229,6 +229,10 @@ public class WitnessPathSearcher {
                 if (isContracted(iter.getAdjNode())) {
                     continue;
                 }
+                // do not allow u-turns
+                if (iter.getOrigEdgeFirst() == incEdges[currKey]) {
+                    continue;
+                }
                 double edgeWeight = turnWeighting.calcWeight(iter, false, incEdges[currKey]);
                 double weight = edgeWeight + weights[currKey];
                 if (isInfinite(weight)) {
@@ -239,7 +243,7 @@ public class WitnessPathSearcher {
 
                 // dijkstra expansion: add or update current entries
                 int key = getEdgeKey(iter.getOrigEdgeLast(), iter.getAdjNode());
-                if (!EdgeIterator.Edge.isValid(edges[key])) {
+                if (edges[key] == NO_EDGE) {
                     setEntry(key, iter, weight, currKey, isPathToCenter);
                     changedEdges.add(key);
                     dijkstraHeap.insert_(weight, key);
@@ -348,7 +352,7 @@ public class WitnessPathSearcher {
                     NO_EDGE,
                     outIter.getOrigEdgeFirst(),
                     sourceNode, turnWeight);
-            if (!EdgeIterator.Edge.isValid(edges[key])) {
+            if (edges[key] == NO_EDGE) {
                 // add new initial entry
                 edges[key] = outIter.getEdge();
                 incEdges[key] = incEdge;
@@ -475,6 +479,9 @@ public class WitnessPathSearcher {
     }
 
     private double calcTurnWeight(int inEdge, int viaNode, int outEdge) {
+        if (inEdge == outEdge) {
+            return Double.POSITIVE_INFINITY;
+        }
         return turnWeighting.calcTurnWeight(inEdge, viaNode, outEdge);
     }
 

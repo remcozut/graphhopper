@@ -37,16 +37,37 @@ public enum TraversalMode {
     /**
      * The simplest traversal mode but without turn restrictions or cost support.
      */
-    NODE_BASED(false),
+    NODE_BASED(false, 1, false),
     /**
-     * The edged-based traversal mode with turn restriction and cost support. 2 times slower than node based.
+     * Strictly not recommended as it could lead to 'route not found' for bidirectional algorithms.
+     * An edged-based traversal mode with basic turn restriction and cost support, including the
+     * most scenarios. But without certain turn restrictions and without u-turns. As fast as node
+     * based.
      */
-    EDGE_BASED(true);
+    EDGE_BASED_1DIR(true, 1, false),
+    /**
+     * The bidirectional edged-based traversal mode with turn restriction and cost support. Without
+     * u-turn support. 2 times slower than node based.
+     */
+    EDGE_BASED_2DIR(true, 2, false),
+    /**
+     * Not recommended as it leads to strange routes that outsmart the turn costs. The most feature
+     * rich edged-based traversal mode with turn restriction and cost support, including u-turns. 4
+     * times slower than node based.
+     */
+    EDGE_BASED_2DIR_UTURN(true, 2, true);
 
     private final boolean edgeBased;
+    private final int noOfStates;
+    private final boolean uTurnSupport;
 
-    TraversalMode(boolean edgeBased) {
+    TraversalMode(boolean edgeBased, int noOfStates, boolean uTurnSupport) {
         this.edgeBased = edgeBased;
+        this.noOfStates = noOfStates;
+        this.uTurnSupport = uTurnSupport;
+
+        if (noOfStates != 1 && noOfStates != 2)
+            throw new IllegalArgumentException("Currently only 1 or 2 states allowed");
     }
 
     public static TraversalMode fromString(String name) {
@@ -70,7 +91,14 @@ public enum TraversalMode {
      * @return the identifier to access the shortest path tree
      */
     public final int createTraversalId(EdgeIteratorState iterState, boolean reverse) {
-        return createTraversalId(iterState.getBaseNode(), iterState.getAdjNode(), iterState.getEdge(), reverse);
+        if (edgeBased) {
+            if (noOfStates == 1)
+                return iterState.getEdge();
+
+            return GHUtility.createEdgeKey(iterState.getBaseNode(), iterState.getAdjNode(), iterState.getEdge(), reverse);
+        }
+
+        return iterState.getAdjNode();
     }
 
     /**
@@ -78,19 +106,30 @@ public enum TraversalMode {
      */
     public final int createTraversalId(int baseNode, int adjNode, int edgeId, boolean reverse) {
         if (edgeBased) {
+            if (noOfStates == 1)
+                return edgeId;
+
             return GHUtility.createEdgeKey(baseNode, adjNode, edgeId, reverse);
         }
+
         return adjNode;
     }
 
     public int reverseEdgeKey(int edgeKey) {
-        if (edgeBased)
+        if (edgeBased && noOfStates > 1)
             return GHUtility.reverseEdgeKey(edgeKey);
         return edgeKey;
+    }
+
+    public int getNoOfStates() {
+        return noOfStates;
     }
 
     public boolean isEdgeBased() {
         return edgeBased;
     }
 
+    public final boolean hasUTurnSupport() {
+        return uTurnSupport;
+    }
 }

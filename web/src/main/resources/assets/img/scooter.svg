@@ -49,35 +49,35 @@
        enabled="true"
        snapvisiblegridlinesonly="true" />
     <sodipodi:guide
-       orientation="1,0"
+       heading="1,0"
        position="0,20"
        id="guide4470" />
     <sodipodi:guide
-       orientation="0,1"
+       heading="0,1"
        position="4,24"
        id="guide4472" />
     <sodipodi:guide
-       orientation="1,0"
+       heading="1,0"
        position="24,13"
        id="guide4474" />
     <sodipodi:guide
-       orientation="0,1"
+       heading="0,1"
        position="15,0"
        id="guide4476" />
     <sodipodi:guide
-       orientation="1,0"
+       heading="1,0"
        position="23,20"
        id="guide4478" />
     <sodipodi:guide
-       orientation="0,1"
+       heading="0,1"
        position="20,23"
        id="guide4480" />
     <sodipodi:guide
-       orientation="1,0"
+       heading="1,0"
        position="2,5"
        id="guide4482" />
     <sodipodi:guide
-       orientation="0,1"
+       heading="0,1"
        position="7,2"
        id="guide4484" />
   </sodipodi:namedview>

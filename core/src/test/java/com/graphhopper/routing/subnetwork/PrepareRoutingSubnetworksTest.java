@@ -18,6 +18,7 @@
 package com.graphhopper.routing.subnetwork;
 
 import com.carrotsearch.hppc.IntArrayList;
+import com.graphhopper.routing.subnetwork.PrepareRoutingSubnetworks.PrepEdgeFilter;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.storage.GraphBuilder;
 import com.graphhopper.storage.GraphHopperStorage;
@@ -95,7 +96,7 @@ public class PrepareRoutingSubnetworksTest {
     @Test
     public void testFindSubnetworks() {
         GraphHopperStorage g = createSubnetworkTestStorage();
-        DefaultEdgeFilter filter = DefaultEdgeFilter.allEdges(carFlagEncoder);
+        PrepEdgeFilter filter = new PrepEdgeFilter(carFlagEncoder);
         PrepareRoutingSubnetworks instance = new PrepareRoutingSubnetworks(g, Collections.singletonList(carFlagEncoder));
         List<IntArrayList> components = instance.findSubnetworks(filter);
 
@@ -111,7 +112,7 @@ public class PrepareRoutingSubnetworksTest {
     @Test
     public void testKeepLargestNetworks() {
         GraphHopperStorage g = createSubnetworkTestStorage();
-        DefaultEdgeFilter filter = DefaultEdgeFilter.allEdges(carFlagEncoder);
+        PrepEdgeFilter filter = new PrepEdgeFilter(carFlagEncoder);
         PrepareRoutingSubnetworks instance = new PrepareRoutingSubnetworks(g, Collections.singletonList(carFlagEncoder));
         List<IntArrayList> components = instance.findSubnetworks(filter);
         assertEquals(3, components.size());
@@ -252,7 +253,7 @@ public class PrepareRoutingSubnetworksTest {
 
         PrepareRoutingSubnetworks instance = new PrepareRoutingSubnetworks(g, Collections.singletonList(carFlagEncoder)).
                 setMinOneWayNetworkSize(3);
-        int removed = instance.removeDeadEndUnvisitedNetworks(DefaultEdgeFilter.allEdges(carFlagEncoder));
+        int removed = instance.removeDeadEndUnvisitedNetworks(new PrepEdgeFilter(carFlagEncoder));
 
         assertEquals(3, removed);
         instance.markNodesRemovedIfUnreachable();
@@ -268,7 +269,7 @@ public class PrepareRoutingSubnetworksTest {
 
         PrepareRoutingSubnetworks instance = new PrepareRoutingSubnetworks(g, Collections.singletonList(carFlagEncoder)).
                 setMinOneWayNetworkSize(3);
-        int removed = instance.removeDeadEndUnvisitedNetworks(DefaultEdgeFilter.allEdges(carFlagEncoder));
+        int removed = instance.removeDeadEndUnvisitedNetworks(new PrepEdgeFilter(carFlagEncoder));
 
         assertEquals(3, removed);
         instance.markNodesRemovedIfUnreachable();
@@ -308,7 +309,7 @@ public class PrepareRoutingSubnetworksTest {
 
         PrepareRoutingSubnetworks instance = new PrepareRoutingSubnetworks(g, Collections.singletonList(carFlagEncoder)).
                 setMinOneWayNetworkSize(2);
-        int removedEdges = instance.removeDeadEndUnvisitedNetworks(DefaultEdgeFilter.allEdges(carFlagEncoder));
+        int removedEdges = instance.removeDeadEndUnvisitedNetworks(new PrepEdgeFilter(carFlagEncoder));
         assertEquals(2, removedEdges);
     }
 
@@ -335,7 +336,7 @@ public class PrepareRoutingSubnetworksTest {
         instance.doWork();
 
         // only one remaining network
-        List<IntArrayList> components = instance.findSubnetworks(DefaultEdgeFilter.allEdges(carFlagEncoder));
+        List<IntArrayList> components = instance.findSubnetworks(new PrepEdgeFilter(carFlagEncoder));
         assertEquals(1, components.size());
     }
 

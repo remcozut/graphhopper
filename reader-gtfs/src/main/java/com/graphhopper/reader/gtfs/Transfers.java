@@ -94,10 +94,10 @@ class Transfers {
         final ArrayList<Transfer> transfersBySpecificity = new ArrayList<>(transfers);
         transfersBySpecificity.sort(Comparator.comparingInt(t -> {
             int score = 0;
-            if (Objects.equals(fromRouteId, t.from_route_id)) {
+            if (fromRouteId.equals(t.from_route_id)) {
                 score++;
             }
-            if (Objects.equals(toRouteId, t.to_route_id)) {
+            if (toRouteId.equals(t.to_route_id)) {
                 score++;
             }
             return -score;

@@ -17,13 +17,14 @@
  */
 package com.graphhopper.routing.util;
 
-import com.graphhopper.reader.OSMTurnRelation;
 import com.graphhopper.routing.profiles.BooleanEncodedValue;
 import com.graphhopper.routing.profiles.DecimalEncodedValue;
 import com.graphhopper.routing.profiles.EncodedValueLookup;
+import com.graphhopper.routing.profiles.IntEncodedValue;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.InstructionAnnotation;
 import com.graphhopper.util.Translation;
+import com.graphhopper.util.WayType;
 
 /**
  * This class provides methods to define how a value (like speed or direction) converts to a flag
@@ -44,21 +45,22 @@ public interface FlagEncoder extends TurnCostEncoder, EncodedValueLookup {
      */
     double getMaxSpeed();
 
+
+    int getMaxUturnDistance();
     /**
      * This method returns the EncodedValue used for the direction-dependent access properties of this encoder.
      */
     BooleanEncodedValue getAccessEnc();
 
+    boolean hasNodeNameReferences();
+    IntEncodedValue getNodeNameEnc();
+
+    int getWayType(IntsRef edgeFlags);
+
     /**
      * This method returns the EncodedValue used for the average speed of this encoder.
      */
     DecimalEncodedValue getAverageSpeedEnc();
-
-    /**
-     * @return whether or not this encoder should apply the given turn restriction
-     * @see OSMTurnRelation
-     */
-    boolean acceptsTurnRelation(OSMTurnRelation relation);
 
     /**
      * Returns true if the feature class is supported like TurnWeighting or PriorityWeighting.

@@ -55,14 +55,14 @@ public class LocationIndexTreeCHTest extends LocationIndexTreeTest {
 
     @Override
     GraphHopperStorage createGHStorage(Directory dir, EncodingManager encodingManager, boolean is3D) {
-        return new GraphHopperStorage(Arrays.asList(CHProfile.nodeBased(new FastestWeighting(encodingManager.getEncoder("car")))), dir, encodingManager, is3D).
+        return new GraphHopperStorage(Arrays.asList(new FastestWeighting(encodingManager.getEncoder("car"))), dir, encodingManager, is3D, new GraphExtension.NoOpExtension()).
                 create(100);
     }
 
     @Test
     public void testCHGraph() {
         GraphHopperStorage ghStorage = createGHStorage(new RAMDirectory(), encodingManager, false);
-        CHGraph lg = ghStorage.getCHGraph();
+        CHGraph lg = ghStorage.getGraph(CHGraph.class);
         // 0
         // 1
         // 2
@@ -83,22 +83,27 @@ public class LocationIndexTreeCHTest extends LocationIndexTreeTest {
         // create shortcuts
         ghStorage.freeze();
         int flags = PrepareEncoder.getScDirMask();
-        int sc1 = addShortcut(lg, 0, 2, 0, iter1.getEdge(), iter2.getEdge(), flags);
-        int sc2 = addShortcut(lg, 2, 4, 0, iter3.getEdge(), iter4.getEdge(), flags);
-        addShortcut(lg, 0, 4, 0, sc1, sc2, flags);
+        CHEdgeIteratorState iter5 = lg.shortcut(0, 2);
+        iter5.setFlagsAndWeight(flags, 0);
+        iter5.setDistance(20);
+        iter5.setSkippedEdges(iter1.getEdge(), iter2.getEdge());
+        CHEdgeIteratorState iter6 = lg.shortcut(2, 4);
+        iter6.setFlagsAndWeight(flags, 0);
+        iter6.setDistance(28);
+        iter6.setSkippedEdges(iter3.getEdge(), iter4.getEdge());
+        CHEdgeIteratorState tmp = lg.shortcut(0, 4);
+        tmp.setFlagsAndWeight(flags, 0);
+        tmp.setDistance(40);
+        tmp.setSkippedEdges(iter5.getEdge(), iter6.getEdge());
 
         LocationIndex index = createIndex(ghStorage, -1);
         assertEquals(2, findID(index, 0, 0.5));
     }
 
-    private int addShortcut(CHGraph lg, int from, int to, double weight, int skip1, int skip2, int direction) {
-        return lg.shortcut(from, to, direction, weight, skip1, skip2);
-    }
-
     @Test
     public void testSortHighLevelFirst() {
         GraphHopperStorage g = createGHStorage(new RAMDirectory(), encodingManager, false);
-        final CHGraph lg = g.getCHGraph();
+        final CHGraph lg = g.getGraph(CHGraph.class);
         lg.getNodeAccess().ensureNode(4);
         lg.setLevel(1, 10);
         lg.setLevel(2, 30);
@@ -132,7 +137,7 @@ public class LocationIndexTreeCHTest extends LocationIndexTreeTest {
         EdgeIteratorState iter1 = g.edge(1, 0, 100, true);
         g.edge(2, 3, 100, true);
 
-        CHGraph lg = g.getCHGraph();
+        CHGraphImpl lg = (CHGraphImpl) g.getGraph(CHGraph.class);
         g.freeze();
         lg.setLevel(0, 11);
         lg.setLevel(1, 10);

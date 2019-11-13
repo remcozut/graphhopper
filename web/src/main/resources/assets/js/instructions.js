@@ -8,7 +8,7 @@ function addInstruction(mapLayer, main, instr, instrIndex, lngLat, useMiles, deb
     if (instrIndex === 0)
         sign = "marker-icon-green";
     else
-        sign = messages.getSignName(sign);
+        sign = messages.getSignName(sign, instr.turn_type);
     var title = instr.text;
     if (instr.annotation_text) {
         if (!title)
@@ -17,20 +17,21 @@ function addInstruction(mapLayer, main, instr, instrIndex, lngLat, useMiles, deb
             title = title + ", " + instr.annotation_text;
     }
 
+    if (instr.bike_node) {
+        title += "<br/>knooppunt: " + instr.bike_node;
+    }
+
     var pathname = window.location.pathname;
     var dirname = pathname.substring(0, pathname.lastIndexOf('/'));
 
     var instructionDiv = $("<tr class='instruction'/>");
-    if (sign !== "continue") {
+
         var indiPic = "<img class='pic' style='vertical-align: middle' src='" +
-            dirname + "/img/" + sign + ".png'/>";
+            dirname + "/img/directions/" + sign + ".png'/>";
         instructionDiv.append("<td class='instr_pic'>" + indiPic + "</td>");
-    } else {
-        instructionDiv.append("<td class='instr_pic'/>");
-    }
 
     var tdVar = $("<td class='instr_title'>");
-    tdVar.text(title);
+    tdVar.html(title);
 
     instructionDiv.append(tdVar);
     var distance = instr.distance;
@@ -51,7 +52,7 @@ function addInstruction(mapLayer, main, instr, instrIndex, lngLat, useMiles, deb
             // Debug Turn Instructions more easily
             L.marker([lngLat[1], lngLat[0]], {
                 icon: L.icon({
-                    iconUrl: './img/marker-small-red.png',
+                    iconUrl: './img/directions/marker-small-red.png',
                     // Made the instructions icon a bit bigger, as they are placed before the path details
                     iconSize: [16, 16]
                 }),

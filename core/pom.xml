@@ -6,7 +6,7 @@
     <groupId>com.graphhopper</groupId>
     <artifactId>graphhopper-core</artifactId>
     <name>GraphHopper Core</name>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.13-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>
         GraphHopper is a fast and memory efficient Java road routing engine
@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.graphhopper</groupId>
         <artifactId>graphhopper-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>0.13-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -65,6 +65,13 @@
             </exclusions>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.9</version>
+        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
@@ -98,7 +105,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <version>3.1.0</version>
                     <executions>
                         <execution>
                             <goals>
@@ -111,7 +118,7 @@
                 <plugin>
                     <groupId>pl.project13.maven</groupId>
                     <artifactId>git-commit-id-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>2.2.5</version>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -56,18 +56,6 @@ public class FootFlagEncoderTest {
     }
 
     @Test
-    public void testSteps() {
-        ReaderWay way = new ReaderWay(1);
-        way.setTag("highway", "service");
-        IntsRef flags = footEncoder.handleWayTags(encodingManager.createEdgeFlags(), way, footEncoder.getAccess(way), 0);
-        assertEquals(FootFlagEncoder.MEAN_SPEED, footEncoder.getSpeed(flags), 1e-1);
-
-        way.setTag("highway", "steps");
-        flags = footEncoder.handleWayTags(encodingManager.createEdgeFlags(), way, footEncoder.getAccess(way), 0);
-        assertTrue(FootFlagEncoder.MEAN_SPEED > footEncoder.getSpeed(flags));
-    }
-
-    @Test
     public void testBasics() {
         IntsRef edgeFlags = encodingManager.createEdgeFlags();
         footEncoder.flagsDefault(edgeFlags, true, true);
@@ -140,9 +128,6 @@ public class FootFlagEncoderTest {
         assertTrue(footEncoder.getAccess(way).isWay());
 
         way.setTag("highway", "footway");
-        assertTrue(footEncoder.getAccess(way).isWay());
-
-        way.setTag("highway", "platform");
         assertTrue(footEncoder.getAccess(way).isWay());
 
         way.setTag("highway", "motorway");
@@ -246,19 +231,19 @@ public class FootFlagEncoderTest {
         ReaderWay way = new ReaderWay(1);
         way.setTag("railway", "platform");
         IntsRef flags = footEncoder.handleWayTags(encodingManager.createEdgeFlags(), way, footEncoder.getAccess(way), 0);
-        assertFalse(flags.isEmpty());
+        assertNotEquals(0, flags.ints[0]);
 
         way.clearTags();
         way.setTag("highway", "track");
         way.setTag("railway", "platform");
         flags = footEncoder.handleWayTags(encodingManager.createEdgeFlags(), way, footEncoder.getAccess(way), 0);
-        assertFalse(flags.isEmpty());
+        assertNotEquals(0, flags.ints[0]);
 
         way.clearTags();
         // only tram, no highway => no access
         way.setTag("railway", "tram");
         flags = footEncoder.handleWayTags(encodingManager.createEdgeFlags(), way, footEncoder.getAccess(way), 0);
-        assertTrue(flags.isEmpty());
+        assertEquals(0, flags.ints[0]);
     }
 
     @Test
@@ -266,7 +251,7 @@ public class FootFlagEncoderTest {
         ReaderWay way = new ReaderWay(1);
         way.setTag("man_made", "pier");
         IntsRef flags = footEncoder.handleWayTags(encodingManager.createEdgeFlags(), way, footEncoder.getAccess(way), 0);
-        assertFalse(flags.isEmpty());
+        assertNotEquals(0, flags.ints[0]);
     }
 
     @Test

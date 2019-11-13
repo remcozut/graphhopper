@@ -23,13 +23,15 @@ import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.weighting.ShortestWeighting;
 import com.graphhopper.routing.weighting.TurnWeighting;
 import com.graphhopper.routing.weighting.Weighting;
-import com.graphhopper.storage.*;
+import com.graphhopper.storage.CHGraph;
+import com.graphhopper.storage.GraphBuilder;
+import com.graphhopper.storage.GraphHopperStorage;
+import com.graphhopper.storage.TurnCostExtension;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.PMap;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.graphhopper.routing.weighting.TurnWeighting.INFINITE_U_TURN_COSTS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -45,10 +47,10 @@ public class WitnessPathSearcherTest {
         EncodingManager encodingManager = EncodingManager.create(encoder);
         Weighting weighting = new ShortestWeighting(encoder);
         PreparationWeighting preparationWeighting = new PreparationWeighting(weighting);
-        graph = new GraphBuilder(encodingManager).setCHProfiles(CHProfile.edgeBased(weighting, INFINITE_U_TURN_COSTS)).create();
-        TurnCostExtension turnCostExtension = graph.getTurnCostExtension();
+        graph = new GraphBuilder(encodingManager).setCHGraph(weighting).setEdgeBasedCH(true).create();
+        TurnCostExtension turnCostExtension = (TurnCostExtension) graph.getExtension();
         chTurnWeighting = new TurnWeighting(preparationWeighting, turnCostExtension);
-        chGraph = graph.getCHGraph();
+        chGraph = graph.getGraph(CHGraph.class);
     }
 
     @Test

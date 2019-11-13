@@ -100,7 +100,7 @@ public class Polygon implements Shape {
     }
 
     @Override
-    public boolean intersects(Shape o) {
+    public boolean intersect(Shape o) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

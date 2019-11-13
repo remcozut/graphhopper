@@ -25,7 +25,10 @@ import com.graphhopper.routing.util.HintsMap;
 import com.graphhopper.routing.util.TestAlgoCollector.AlgoHelperEntry;
 import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.Weighting;
-import com.graphhopper.storage.*;
+import com.graphhopper.storage.CHGraph;
+import com.graphhopper.storage.Directory;
+import com.graphhopper.storage.GraphBuilder;
+import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.storage.index.LocationIndexTree;
 import com.graphhopper.util.Parameters;
@@ -89,17 +92,25 @@ public class RoutingAlgorithmIT {
             final HintsMap chHints = new HintsMap(defaultHints);
             chHints.put(Parameters.CH.DISABLE, false);
             chHints.put(Parameters.Routing.EDGE_BASED, tMode.isEdgeBased());
-            CHProfile pickedProfile = null;
-            for (CHProfile chProfile : hopper.getCHFactoryDecorator().getCHProfiles()) {
-                if (chProfile.getWeighting().equals(weighting) && tMode.isEdgeBased() == chProfile.getTraversalMode().isEdgeBased()) {
-                    pickedProfile = chProfile;
+            Weighting pickedWeighting = null;
+            for (Weighting tmpWeighting : hopper.getCHFactoryDecorator().getNodeBasedWeightings()) {
+                if (tmpWeighting.equals(weighting)) {
+                    pickedWeighting = tmpWeighting;
                     break;
                 }
             }
-            if (pickedProfile == null)
-                throw new IllegalStateException("Didn't find weighting " + hints.getWeighting() + " in " + hopper.getCHFactoryDecorator().getCHProfiles());
+            // todo: not so sure about this, can the edge based weighting entry overwrite the picked weighting found
+            // in the node based weightings ?
+            for (Weighting tmpWeighting : hopper.getCHFactoryDecorator().getEdgeBasedWeightings()) {
+                if (tmpWeighting.equals(weighting)) {
+                    pickedWeighting = tmpWeighting;
+                    break;
+                }
+            }
+            if (pickedWeighting == null)
+                throw new IllegalStateException("Didn't find weighting " + hints.getWeighting() + " in " + hopper.getCHFactoryDecorator().getNodeBasedWeightings());
 
-            prepare.add(new AlgoHelperEntry(ghStorage.getCHGraph(pickedProfile),
+            prepare.add(new AlgoHelperEntry(ghStorage.getGraph(CHGraph.class, pickedWeighting),
                     AlgorithmOptions.start(dijkstrabiOpts).hints(chHints).build(), idx, "dijkstrabi|ch|prepare|" + hints.getWeighting()) {
                 @Override
                 public RoutingAlgorithmFactory createRoutingFactory() {
@@ -107,7 +118,7 @@ public class RoutingAlgorithmIT {
                 }
             });
 
-            prepare.add(new AlgoHelperEntry(ghStorage.getCHGraph(pickedProfile),
+            prepare.add(new AlgoHelperEntry(ghStorage.getGraph(CHGraph.class, pickedWeighting),
                     AlgorithmOptions.start(astarbiOpts).hints(chHints).build(), idx, "astarbi|ch|prepare|" + hints.getWeighting()) {
                 @Override
                 public RoutingAlgorithmFactory createRoutingFactory() {

@@ -32,6 +32,7 @@ public enum PriorityCode {
     PREFER(5),
     VERY_NICE(6),
     BEST(7);
+
     private final int value;
 
     PriorityCode(int value) {

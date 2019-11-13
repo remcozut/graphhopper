@@ -42,7 +42,7 @@ public interface Graph {
     int getNodes();
 
     /**
-     * @return the number of edges in this graph. Equivalent to getAllEdges().length().
+     * @return the number of edges in this graph. equivalent to getAllEdges().length();
      */
     int getEdges();
 
@@ -59,6 +59,7 @@ public interface Graph {
     /**
      * Creates an edge between the nodes a and b. To set distance or access use the returned edge
      * and e.g. edgeState.setDistance
+     * <p>
      *
      * @param a the index of the starting (tower) node of the edge
      * @param b the index of the ending (tower) node of the edge
@@ -74,9 +75,9 @@ public interface Graph {
     /**
      * Returns a wrapper over the specified edgeId.
      *
-     * @param adjNode is the node that will be returned via getAdjNode(). If adjNode is
+     * @param adjNode is the node that will be returned via adjNode(). If adjNode is
      *                Integer.MIN_VALUE then the edge will be returned in the direction of how it is stored
-     * @return a new EdgeIteratorState object or potentially null if adjNode does not match
+     * @return an edge iterator state or potentially null if adjNode does not match
      * @throws IllegalStateException if edgeId is not valid
      */
     EdgeIteratorState getEdgeIteratorState(int edgeId, int adjNode);
@@ -87,18 +88,15 @@ public interface Graph {
     int getOtherNode(int edge, int node);
 
     /**
-     * @return true if the edge with id edge is adjacent to node, false otherwise
-     */
-    boolean isAdjacentToNode(int edge, int node);
-
-    /**
      * @return all edges in this graph, where baseNode will be the smaller node.
      */
     AllEdgesIterator getAllEdges();
 
     /**
      * Returns an EdgeExplorer which makes it possible to traverse all filtered edges of a specific
-     * node. Calling this method might be expensive, so e.g. create an explorer before a for loop!
+     * node. Reduce calling this method as much as possible, e.g. create an explorer before a for
+     * loop!
+     * <p>
      *
      * @see EdgeExplorer
      * @see Graph#createEdgeExplorer()
@@ -118,7 +116,8 @@ public interface Graph {
     Graph copyTo(Graph g);
 
     /**
-     * @return the {@link TurnCostExtension} or null if not supported
+     * @return the graph extension like a TurnCostExtension
      */
-    TurnCostExtension getTurnCostExtension();
+    GraphExtension getExtension();
+
 }

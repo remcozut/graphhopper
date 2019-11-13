@@ -1,0 +1,5 @@
+in_km_singular=Over 1 kilometer
+in_km=Over %1$s kilometer
+in_m=Over %1$s meter
+for_km=gedurende %1$s kilometer
+then=dan

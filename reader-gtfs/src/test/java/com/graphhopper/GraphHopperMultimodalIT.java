@@ -20,16 +20,14 @@ package com.graphhopper;
 
 import com.graphhopper.reader.gtfs.GraphHopperGtfs;
 import com.graphhopper.reader.gtfs.GtfsStorage;
-import com.graphhopper.reader.gtfs.PtEncodedValues;
-import com.graphhopper.reader.gtfs.Request;
+import com.graphhopper.reader.gtfs.PtFlagEncoder;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.FootFlagEncoder;
-import com.graphhopper.storage.DAType;
 import com.graphhopper.storage.GHDirectory;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.util.Helper;
-import com.graphhopper.util.TranslationMap;
+import com.graphhopper.util.Parameters;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -38,6 +36,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,17 +48,17 @@ public class GraphHopperMultimodalIT {
     private static final ZoneId zoneId = ZoneId.of("America/Los_Angeles");
     private static GraphHopperStorage graphHopperStorage;
     private static LocationIndex locationIndex;
-    private static GtfsStorage gtfsStorage;
 
     @BeforeClass
     public static void init() {
         Helper.removeDir(new File(GRAPH_LOC));
-        EncodingManager encodingManager = PtEncodedValues.createAndAddEncodedValues(EncodingManager.start()).add(new FootFlagEncoder()).build();
-        GHDirectory directory = new GHDirectory(GRAPH_LOC, DAType.RAM_STORE);
-        gtfsStorage = GtfsStorage.createOrLoad(directory);
-        graphHopperStorage = GraphHopperGtfs.createOrLoad(directory, encodingManager, gtfsStorage, Collections.singleton("files/sample-feed.zip"), Collections.singleton("files/beatty.osm"));
+        final PtFlagEncoder ptFlagEncoder = new PtFlagEncoder();
+        EncodingManager encodingManager = EncodingManager.create(Arrays.asList(ptFlagEncoder, new FootFlagEncoder()), 8);
+        GHDirectory directory = GraphHopperGtfs.createGHDirectory(GRAPH_LOC);
+        GtfsStorage gtfsStorage = GraphHopperGtfs.createGtfsStorage();
+        graphHopperStorage = GraphHopperGtfs.createOrLoad(directory, encodingManager, ptFlagEncoder, gtfsStorage, Collections.singleton("files/sample-feed.zip"), Collections.singleton("files/beatty.osm"));
         locationIndex = GraphHopperGtfs.createOrLoadIndex(directory, graphHopperStorage);
-        graphHopper = GraphHopperGtfs.createFactory(new TranslationMap().doImport(), graphHopperStorage, locationIndex, gtfsStorage)
+        graphHopper = GraphHopperGtfs.createFactory(ptFlagEncoder, GraphHopperGtfs.createTranslationMap(), graphHopperStorage, locationIndex, gtfsStorage)
                 .createWithoutRealtimeFeed();
     }
 
@@ -67,17 +66,16 @@ public class GraphHopperMultimodalIT {
     public static void close() {
         graphHopperStorage.close();
         locationIndex.close();
-        gtfsStorage.close();
     }
 
     @Test
     public void testDepartureTimeOfAccessLegInProfileQuery() {
-        Request ghRequest = new Request(
+        GHRequest ghRequest = new GHRequest(
                 36.91311729030539, -116.76769495010377,
                 36.91260259593356, -116.76149368286134
         );
-        ghRequest.setEarliestDepartureTime(LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
-        ghRequest.setProfileQuery(true);
+        ghRequest.getHints().put(Parameters.PT.EARLIEST_DEPARTURE_TIME, LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
+        ghRequest.getHints().put(Parameters.PT.PROFILE_QUERY, true);
 
         GHResponse response = graphHopper.route(ghRequest);
         assertThat(response.getHints().getInt("visited_nodes.sum", Integer.MAX_VALUE)).isLessThanOrEqualTo(243);
@@ -93,12 +91,12 @@ public class GraphHopperMultimodalIT {
 
     @Test
     public void testDepartureTimeOfAccessLeg() {
-        Request ghRequest = new Request(
+        GHRequest ghRequest = new GHRequest(
                 36.91311729030539, -116.76769495010377,
                 36.91260259593356, -116.76149368286134
         );
-        ghRequest.setEarliestDepartureTime(LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
-        ghRequest.setBetaWalkTime(2.0); // I somewhat dislike walking
+        ghRequest.getHints().put(Parameters.PT.EARLIEST_DEPARTURE_TIME, LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
+        ghRequest.getHints().put("beta_walk_time", 2.0); // I somewhat dislike walking
 
         GHResponse response = graphHopper.route(ghRequest);
         assertThat(response.getHints().getInt("visited_nodes.sum", Integer.MAX_VALUE)).isLessThanOrEqualTo(129);
@@ -123,33 +121,20 @@ public class GraphHopperMultimodalIT {
 
         // I like walking exactly as I like riding a bus (per travel time unit)
         // Now, the walk solution dominates, and we get no transit solution.
-        ghRequest.setBetaWalkTime(1.0);
+        ghRequest.getHints().put("beta_walk_time", 1.0);
         response = graphHopper.route(ghRequest);
         assertThat(response.getHints().getInt("visited_nodes.sum", Integer.MAX_VALUE)).isLessThanOrEqualTo(138);
         assertThat(response.getAll().stream().filter(p -> p.getLegs().size() > 1).findFirst()).isEmpty();
     }
 
     @Test
-    public void testArriveBy() {
-        Request ghRequest = new Request(
-                36.92311729030539, -116.76769495010377,
-                36.91260259593356, -116.76149368286134
-        );
-        ghRequest.setEarliestDepartureTime(LocalDateTime.of(2007, 1, 1, 7, 0, 0).atZone(zoneId).toInstant());
-        ghRequest.setArriveBy(true);
-
-        GHResponse response = graphHopper.route(ghRequest);
-        assertThat(response.getAll()).isNotEmpty();
-    }
-
-    @Test
     public void testFastWalking() {
-        Request ghRequest = new Request(
+        GHRequest ghRequest = new GHRequest(
                 36.91311729030539, -116.76769495010377,
                 36.91260259593356, -116.76149368286134
         );
-        ghRequest.setEarliestDepartureTime(LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
-        ghRequest.setWalkSpeedKmH(50); // Yes, I can walk very fast, 50 km/h. Problem?
+        ghRequest.getHints().put(Parameters.PT.EARLIEST_DEPARTURE_TIME, LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
+        ghRequest.getHints().put(Parameters.PT.WALK_SPEED, 50); // Yes, I can walk very fast, 50 km/h. Problem?
 
         GHResponse response = graphHopper.route(ghRequest);
 
@@ -164,13 +149,13 @@ public class GraphHopperMultimodalIT {
 
     @Test
     public void testFastWalkingInProfileQuery() {
-        Request ghRequest = new Request(
+        GHRequest ghRequest = new GHRequest(
                 36.91311729030539, -116.76769495010377,
                 36.91260259593356, -116.76149368286134
         );
-        ghRequest.setEarliestDepartureTime(LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
-        ghRequest.setWalkSpeedKmH(50); // Yes, I can walk very fast, 50 km/h. Problem?
-        ghRequest.setProfileQuery(true);
+        ghRequest.getHints().put(Parameters.PT.EARLIEST_DEPARTURE_TIME, LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
+        ghRequest.getHints().put(Parameters.PT.WALK_SPEED, 50); // Yes, I can walk very fast, 50 km/h. Problem?
+        ghRequest.getHints().put(Parameters.PT.PROFILE_QUERY, true);
 
         GHResponse response = graphHopper.route(ghRequest);
 
@@ -185,24 +170,24 @@ public class GraphHopperMultimodalIT {
 
     @Test
     public void testProfileQueryDoesntEndPrematurely() {
-        Request ghRequest = new Request(
+        GHRequest ghRequest = new GHRequest(
                 36.91311729030539, -116.76769495010377,
                 36.91260259593356, -116.76149368286134
         );
-        ghRequest.setEarliestDepartureTime(LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
+        ghRequest.getHints().put(Parameters.PT.EARLIEST_DEPARTURE_TIME, LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
         // Provoke a situation where solutions which are later dominated will be found early.
         // If everything is right, the n-th solution should be the same, no matter if I ask for n, or for n+m solutions.
-        ghRequest.setWalkSpeedKmH(1); // No, I cannot walk very fast, 1 km/h. Problem?
-        ghRequest.setProfileQuery(true);
+        ghRequest.getHints().put(Parameters.PT.WALK_SPEED, 1); // No, I cannot walk very fast, 1 km/h. Problem?
+        ghRequest.getHints().put(Parameters.PT.PROFILE_QUERY, true);
 
-        ghRequest.setLimitSolutions(1);
+        ghRequest.getHints().put(Parameters.PT.LIMIT_SOLUTIONS, 1);
         GHResponse response1 = graphHopper.route(ghRequest);
         assertThat(response1.getHints().getInt("visited_nodes.sum", Integer.MAX_VALUE)).isLessThanOrEqualTo(142);
-        ghRequest.setLimitSolutions(3);
+        ghRequest.getHints().put(Parameters.PT.LIMIT_SOLUTIONS, 3);
         GHResponse response3 = graphHopper.route(ghRequest);
         assertThat(response3.getHints().getInt("visited_nodes.sum", Integer.MAX_VALUE)).isLessThanOrEqualTo(230);
         assertThat(response1.getAll().get(0).getTime()).isEqualTo(response3.getAll().get(0).getTime());
-        ghRequest.setLimitSolutions(5);
+        ghRequest.getHints().put(Parameters.PT.LIMIT_SOLUTIONS, 5);
         GHResponse response5 = graphHopper.route(ghRequest);
         assertThat(response5.getHints().getInt("visited_nodes.sum", Integer.MAX_VALUE)).isLessThanOrEqualTo(334);
         assertThat(response3.getAll().get(2).getTime()).isEqualTo(response5.getAll().get(2).getTime());
@@ -210,13 +195,13 @@ public class GraphHopperMultimodalIT {
 
     @Test
     public void testHighDisutilityOfWalking() {
-        Request ghRequest = new Request(
+        GHRequest ghRequest = new GHRequest(
                 36.91311729030539, -116.76769495010377,
                 36.91260259593356, -116.76149368286134
         );
-        ghRequest.setEarliestDepartureTime(LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
-        ghRequest.setWalkSpeedKmH(50); // Yes, I can walk very fast, 50 km/h. Problem?
-        ghRequest.setBetaWalkTime(20); // But I dislike walking a lot.
+        ghRequest.getHints().put(Parameters.PT.EARLIEST_DEPARTURE_TIME, LocalDateTime.of(2007, 1, 1, 6, 40, 0).atZone(zoneId).toInstant());
+        ghRequest.getHints().put(Parameters.PT.WALK_SPEED, 50); // Yes, I can walk very fast, 50 km/h. Problem?
+        ghRequest.getHints().put("beta_walk_time", 20); // But I dislike walking a lot.
 
         GHResponse response = graphHopper.route(ghRequest);
 

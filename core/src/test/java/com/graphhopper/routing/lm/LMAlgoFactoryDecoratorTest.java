@@ -3,8 +3,10 @@ package com.graphhopper.routing.lm;
 import com.graphhopper.routing.util.CarFlagEncoder;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.FlagEncoder;
+import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.FastestWeighting;
 import com.graphhopper.routing.weighting.ShortestWeighting;
+import com.graphhopper.storage.GraphExtension;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.RAMDirectory;
 import com.graphhopper.util.CmdArgs;
@@ -13,7 +15,9 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 public class LMAlgoFactoryDecoratorTest {
@@ -33,7 +37,7 @@ public class LMAlgoFactoryDecoratorTest {
         FlagEncoder car = new CarFlagEncoder();
         EncodingManager em = EncodingManager.create(car);
         dec.addWeighting(new FastestWeighting(car)).addWeighting(new ShortestWeighting(car));
-        dec.createPreparations(new GraphHopperStorage(new RAMDirectory(), em, false), null);
+        dec.createPreparations(new GraphHopperStorage(new RAMDirectory(), em, false, new GraphExtension.NoOpExtension()), null);
         assertEquals(1, dec.getPreparations().get(0).getLandmarkStorage().getFactor(), .1);
         assertEquals(0.3, dec.getPreparations().get(1).getLandmarkStorage().getFactor(), .1);
     }
@@ -48,11 +52,6 @@ public class LMAlgoFactoryDecoratorTest {
 
         // See #1076
         args.put(Parameters.Landmark.PREPARE + "weightings", "no");
-        dec = new LMAlgoFactoryDecorator();
-        dec.init(args);
-        assertFalse(dec.isEnabled());
-
-        args.put(Parameters.Landmark.PREPARE + "weightings", "false");
         dec = new LMAlgoFactoryDecorator();
         dec.init(args);
         assertFalse(dec.isEnabled());

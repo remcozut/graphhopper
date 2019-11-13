@@ -33,7 +33,7 @@ public class AngleCalc {
     private final static double PI_2 = Math.PI / 2.0;
     private final static double PI3_4 = 3.0 * Math.PI / 4.0;
 
-    static double atan2(double y, double x) {
+    static final double atan2(double y, double x) {
         // kludge to prevent 0/0 condition
         double absY = Math.abs(y) + 1e-10;
         double r, angle;
@@ -57,7 +57,7 @@ public class AngleCalc {
     }
 
     /**
-     * Return orientation of line relative to east.
+     * Return heading of line relative to east.
      * <p>
      *
      * @param exact If false the atan gets calculated faster, but it might contain small errors
@@ -87,9 +87,9 @@ public class AngleCalc {
     }
 
     /**
-     * Change the representation of an orientation, so the difference to the given baseOrientation
+     * Change the representation of an heading, so the difference to the given baseOrientation
      * will be smaller or equal to PI (180 degree). This is achieved by adding or subtracting a
-     * 2*PI, so the direction of the orientation will not be changed
+     * 2*PI, so the direction of the heading will not be changed
      */
     public double alignOrientation(double baseOrientation, double orientation) {
         double resultOrientation;
@@ -118,7 +118,7 @@ public class AngleCalc {
         return Math.toDegrees(Helper.round4(orientation)) % 360;
     }
 
-    String azimuth2compassPoint(double azimuth) {
+    public String azimuth2compassPoint(double azimuth) {
 
         String cp;
         double slice = 360.0 / 16;
@@ -142,19 +142,6 @@ public class AngleCalc {
             cp = "N";
         }
         return cp;
-    }
-
-    /**
-     * @return true if the given vectors follow a clockwise order abc, bca or cab,
-     * false if the order is counter-clockwise cba, acb or bac, e.g. this returns true:
-     * a   b
-     * | /
-     * 0 - c
-     */
-    public boolean isClockwise(double aX, double aY, double bX, double bY, double cX, double cY) {
-        // simply compare angles between a,b and b,c
-        final double angleDiff = (cX - aX) * (bY - aY) - (cY - aY) * (bX - aX);
-        return angleDiff < 0;
     }
 
 }

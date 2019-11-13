@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_graphhopper-core" default="compile.module.graphhopper-core">
+  <dirname property="module.graphhopper-core.basedir" file="${ant.file.module_graphhopper-core}"/>
+  
+  <property name="module.jdk.home.graphhopper-core" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.graphhopper-core" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.graphhopper-core" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.graphhopper-core" value="-encoding UTF-8 -source 8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="graphhopper-core.output.dir" value="${module.graphhopper-core.basedir}/target/classes"/>
+  <property name="graphhopper-core.testoutput.dir" value="${module.graphhopper-core.basedir}/target/test-classes"/>
+  
+  <path id="graphhopper-core.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="graphhopper-core.module.production.classpath">
+    <path refid="${module.jdk.classpath.graphhopper-core}"/>
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.1.classpath"/>
+  </path>
+  
+  <path id="graphhopper-core.runtime.production.module.classpath">
+    <pathelement location="${graphhopper-core.output.dir}"/>
+    <path refid="graphhopper-api.runtime.production.module.classpath"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.1.classpath"/>
+  </path>
+  
+  <path id="graphhopper-core.module.classpath">
+    <path refid="${module.jdk.classpath.graphhopper-core}"/>
+    <pathelement location="${graphhopper-core.output.dir}"/>
+    <pathelement location="${graphhopper-api.testoutput.dir}"/>
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.1.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-log4j12:1.7.25.classpath"/>
+    <path refid="library.maven:_log4j:log4j:1.2.17.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+    <pathelement location="${graphhopper-web-api.testoutput.dir}"/>
+    <pathelement location="${graphhopper-web-api.output.dir}"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath"/>
+    <path refid="library.maven:_com.graphhopper.external:jackson-datatype-jts:0.12-2.5-1.classpath"/>
+  </path>
+  
+  <path id="graphhopper-core.runtime.module.classpath">
+    <pathelement location="${graphhopper-core.testoutput.dir}"/>
+    <pathelement location="${graphhopper-core.output.dir}"/>
+    <path refid="graphhopper-api.runtime.module.classpath"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_com.carrotsearch:hppc:0.8.1.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath"/>
+    <path refid="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath"/>
+    <path refid="library.maven:_commons-io:commons-io:1.3.1.classpath"/>
+    <path refid="library.maven:_org.slf4j:slf4j-log4j12:1.7.25.classpath"/>
+    <path refid="library.maven:_log4j:log4j:1.2.17.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+    <path refid="graphhopper-web-api.runtime.module.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.6.classpath"/>
+    <path refid="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath"/>
+    <path refid="library.maven:_com.graphhopper.external:jackson-datatype-jts:0.12-2.5-1.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.graphhopper-core">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.graphhopper-core">
+    <patternset refid="excluded.from.module.graphhopper-core"/>
+  </patternset>
+  
+  <path id="graphhopper-core.module.sourcepath">
+    <dirset dir="${module.graphhopper-core.basedir}">
+      <include name="src/main/java"/>
+      <include name="src/main/resources"/>
+    </dirset>
+  </path>
+  
+  <path id="graphhopper-core.module.test.sourcepath">
+    <dirset dir="${module.graphhopper-core.basedir}">
+      <include name="src/test/java"/>
+      <include name="src/test/resources"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.graphhopper-core" depends="compile.module.graphhopper-core.production,compile.module.graphhopper-core.tests" description="Compile module graphhopper-core"/>
+  
+  <target name="compile.module.graphhopper-core.production" depends="register.custom.compilers,compile.module.graphhopper-api,compile.module.graphhopper-web-api" description="Compile module graphhopper-core; production classes">
+    <mkdir dir="${graphhopper-core.output.dir}"/>
+    <javac2 destdir="${graphhopper-core.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.graphhopper-core}/javac">
+      <compilerarg line="${compiler.args.graphhopper-core}"/>
+      <bootclasspath refid="graphhopper-core.module.bootclasspath"/>
+      <classpath refid="graphhopper-core.module.production.classpath"/>
+      <src refid="graphhopper-core.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.graphhopper-core"/>
+    </javac2>
+    
+    <copy todir="${graphhopper-core.output.dir}">
+      <fileset dir="${module.graphhopper-core.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.graphhopper-core.basedir}/src/main/resources">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.graphhopper-core.tests" depends="register.custom.compilers,compile.module.graphhopper-core.production" description="compile module graphhopper-core; test classes" unless="skip.tests">
+    <mkdir dir="${graphhopper-core.testoutput.dir}"/>
+    <javac2 destdir="${graphhopper-core.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.graphhopper-core}/javac">
+      <compilerarg line="${compiler.args.graphhopper-core}"/>
+      <bootclasspath refid="graphhopper-core.module.bootclasspath"/>
+      <classpath refid="graphhopper-core.module.classpath"/>
+      <src refid="graphhopper-core.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.graphhopper-core"/>
+    </javac2>
+    
+    <copy todir="${graphhopper-core.testoutput.dir}">
+      <fileset dir="${module.graphhopper-core.basedir}/src/test/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.graphhopper-core.basedir}/src/test/resources">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.graphhopper-core" description="cleanup module">
+    <delete dir="${graphhopper-core.output.dir}"/>
+    <delete dir="${graphhopper-core.testoutput.dir}"/>
+  </target>
+</project>

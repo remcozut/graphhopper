@@ -22,6 +22,7 @@ import com.graphhopper.util.shapes.GHPoint3D;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.PrecisionModel;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -136,7 +137,7 @@ public class PointList implements Iterable<GHPoint3D>, PointAccess {
         }
 
         @Override
-        public GHPoint3D get(int index) {
+        public GHPoint3D toGHPoint(int index) {
             throw new UnsupportedOperationException("cannot access EMPTY PointList");
         }
 
@@ -154,7 +155,12 @@ public class PointList implements Iterable<GHPoint3D>, PointAccess {
     private double[] longitudes;
     private double[] elevations;
     private boolean isImmutable = false;
+    private boolean isUnique = false;
 
+    public PointList(boolean isUnique) {
+        this();
+        this.isUnique = isUnique;
+    }
     public PointList() {
         this(10, false);
     }
@@ -228,6 +234,10 @@ public class PointList implements Iterable<GHPoint3D>, PointAccess {
 
     public void add(double lat, double lon, double ele) {
         ensureMutability();
+
+        if (isUnique && size>0 && lat == latitudes[size-1] && lon == longitudes[size-1]) {
+            return;
+        }
         int newSize = size + 1;
         incCap(newSize);
         latitudes[size] = lat;
@@ -399,7 +409,8 @@ public class PointList implements Iterable<GHPoint3D>, PointAccess {
     }
 
     public LineString toLineString(boolean includeElevation) {
-        GeometryFactory gf = new GeometryFactory();
+        GeometryFactory gf = new GeometryFactory(new PrecisionModel(), 4326);
+
         Coordinate[] coordinates = new Coordinate[getSize() == 1 ? 2 : getSize()];
         for (int i = 0; i < getSize(); i++) {
             coordinates[i] = includeElevation ?
@@ -571,7 +582,7 @@ public class PointList implements Iterable<GHPoint3D>, PointAccess {
         }
     }
 
-    public GHPoint3D get(int index) {
+    public GHPoint3D toGHPoint(int index) {
         return new GHPoint3D(getLatitude(index), getLongitude(index), getElevation(index));
     }
 
@@ -594,7 +605,7 @@ public class PointList implements Iterable<GHPoint3D>, PointAccess {
                 if (counter >= getSize())
                     throw new NoSuchElementException();
 
-                GHPoint3D point = PointList.this.get(counter);
+                GHPoint3D point = PointList.this.toGHPoint(counter);
                 counter++;
                 return point;
             }

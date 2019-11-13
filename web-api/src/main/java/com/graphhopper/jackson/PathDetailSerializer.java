@@ -27,8 +27,6 @@ public class PathDetailSerializer extends JsonSerializer<PathDetail> {
             gen.writeBoolean((Boolean) value.getValue());
         else if (value.getValue() instanceof String)
             gen.writeString((String) value.getValue());
-        else if (value.getValue() == null)
-            gen.writeNull();
         else
             throw new JsonGenerationException("Unsupported type for PathDetail.value" + value.getValue().getClass(), gen);
 

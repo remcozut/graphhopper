@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_graphhopper-api" default="compile.module.graphhopper-api">
+  <dirname property="module.graphhopper-api.basedir" file="${ant.file.module_graphhopper-api}"/>
+  
+  <property name="module.jdk.home.graphhopper-api" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.graphhopper-api" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.graphhopper-api" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.graphhopper-api" value="-encoding UTF-8 -source 8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="graphhopper-api.output.dir" value="${module.graphhopper-api.basedir}/target/classes"/>
+  <property name="graphhopper-api.testoutput.dir" value="${module.graphhopper-api.basedir}/target/test-classes"/>
+  
+  <path id="graphhopper-api.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="graphhopper-api.module.production.classpath">
+    <path refid="${module.jdk.classpath.graphhopper-api}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+  </path>
+  
+  <path id="graphhopper-api.runtime.production.module.classpath">
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+  </path>
+  
+  <path id="graphhopper-api.module.classpath">
+    <path refid="${module.jdk.classpath.graphhopper-api}"/>
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+  </path>
+  
+  <path id="graphhopper-api.runtime.module.classpath">
+    <pathelement location="${graphhopper-api.testoutput.dir}"/>
+    <pathelement location="${graphhopper-api.output.dir}"/>
+    <path refid="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath"/>
+    <path refid="library.maven:_junit:junit:4.12.classpath"/>
+    <path refid="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.graphhopper-api">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.graphhopper-api">
+    <patternset refid="excluded.from.module.graphhopper-api"/>
+  </patternset>
+  
+  <path id="graphhopper-api.module.sourcepath">
+    <dirset dir="${module.graphhopper-api.basedir}">
+      <include name="src/main/java"/>
+    </dirset>
+  </path>
+  
+  <path id="graphhopper-api.module.test.sourcepath">
+    <dirset dir="${module.graphhopper-api.basedir}">
+      <include name="src/test/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.graphhopper-api" depends="compile.module.graphhopper-api.production,compile.module.graphhopper-api.tests" description="Compile module graphhopper-api"/>
+  
+  <target name="compile.module.graphhopper-api.production" depends="register.custom.compilers" description="Compile module graphhopper-api; production classes">
+    <mkdir dir="${graphhopper-api.output.dir}"/>
+    <javac2 destdir="${graphhopper-api.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.graphhopper-api}/javac">
+      <compilerarg line="${compiler.args.graphhopper-api}"/>
+      <bootclasspath refid="graphhopper-api.module.bootclasspath"/>
+      <classpath refid="graphhopper-api.module.production.classpath"/>
+      <src refid="graphhopper-api.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.graphhopper-api"/>
+    </javac2>
+    
+    <copy todir="${graphhopper-api.output.dir}">
+      <fileset dir="${module.graphhopper-api.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.graphhopper-api.tests" depends="register.custom.compilers,compile.module.graphhopper-api.production" description="compile module graphhopper-api; test classes" unless="skip.tests">
+    <mkdir dir="${graphhopper-api.testoutput.dir}"/>
+    <javac2 destdir="${graphhopper-api.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.graphhopper-api}/javac">
+      <compilerarg line="${compiler.args.graphhopper-api}"/>
+      <bootclasspath refid="graphhopper-api.module.bootclasspath"/>
+      <classpath refid="graphhopper-api.module.classpath"/>
+      <src refid="graphhopper-api.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.graphhopper-api"/>
+    </javac2>
+    
+    <copy todir="${graphhopper-api.testoutput.dir}">
+      <fileset dir="${module.graphhopper-api.basedir}/src/test/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.graphhopper-api" description="cleanup module">
+    <delete dir="${graphhopper-api.output.dir}"/>
+    <delete dir="${graphhopper-api.testoutput.dir}"/>
+  </target>
+</project>

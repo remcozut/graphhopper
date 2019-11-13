@@ -5,8 +5,8 @@ require('flatpickr/dist/l10n');
 var L = require('leaflet');
 require('leaflet-contextmenu');
 require('leaflet-loading');
-require('leaflet.heightgraph');
 var moment = require('moment');
+require('./lib/leaflet.elevation-0.0.4.min.js');
 require('./lib/leaflet_numbered_markers.js');
 
 global.jQuery = require('jquery');
@@ -30,6 +30,9 @@ if (!host) {
 }
 
 var AutoComplete = require('./autocomplete.js');
+
+
+
 if (ghenv.environment === 'development')
     var autocomplete = AutoComplete.prototype.createStub();
 else
@@ -132,7 +135,8 @@ $(document).ready(function (e) {
                     ghRequest.features = json.features;
 
                     // car, foot and bike should come first. mc comes last
-                    var prefer = {"car": 1, "foot": 2, "bike": 3, "motorcycle": 10000};
+//                    var prefer = { "bike": 1, "ncnbike" : 2, "mtb" : 3, "racingbike": 4, "car": 5,"foot": 6, "motorcycle": 10000};
+                    var prefer = { "ncnbike": 1, "bike" : 2, "mtb" : 3, "racingbike": 4, "car": 5,"foot": 6, "motorcycle": 10000};
                     var showAllVehicles = urlParams.vehicle && (!prefer[urlParams.vehicle] || prefer[urlParams.vehicle] > 3);
                     var vehicles = vehicleTools.getSortedVehicleKeys(json.features, prefer);
                     if (vehicles.length > 0)
@@ -143,14 +147,14 @@ $(document).ready(function (e) {
 
                     var hiddenVehicles = [];
                     for (var i in vehicles) {
-                        var btn = createButton(vehicles[i].toLowerCase(), !showAllVehicles && i > 2);
+                        var btn = createButton(vehicles[i].toLowerCase(), !showAllVehicles && i > 4);
                         vehiclesDiv.append(btn);
 
-                        if (i > 2)
+                        if (i > 4)
                             hiddenVehicles.push(btn);
                     }
 
-                    if (!showAllVehicles && vehicles.length > 3) {
+                    if (!showAllVehicles && vehicles.length > 5) {
                         var moreBtn = $("<a id='more-vehicle-btn'> ...</a>").click(function () {
                             moreBtn.hide();
                             for (var i in hiddenVehicles) {
@@ -549,7 +553,7 @@ function routeLatLng(request, doQuery) {
             return;
         }
 
-        function createClickHandler(geoJsons, currentLayerIndex, tabHeader, oneTab, hasElevation, details) {
+        function createClickHandler(geoJsons, currentLayerIndex, tabHeader, oneTab, hasElevation, useMiles) {
             return function () {
 
                 var currentGeoJson = geoJsons[currentLayerIndex];
@@ -568,7 +572,7 @@ function routeLatLng(request, doQuery) {
 
                 if (hasElevation) {
                     mapLayer.clearElevation();
-                    mapLayer.addElevation(currentGeoJson, details);
+                    mapLayer.addElevation(currentGeoJson, useMiles);
                 }
 
                 headerTabs.find("li").removeClass("current");
@@ -633,7 +637,7 @@ function routeLatLng(request, doQuery) {
             mapLayer.addDataToRoutingLayer(geojsonFeature);
             var oneTab = $("<div class='route_result_tab'>");
             routeResultsDiv.append(oneTab);
-            tabHeader.click(createClickHandler(geoJsons, pathIndex, tabHeader, oneTab, request.hasElevation(), path.details));
+            tabHeader.click(createClickHandler(geoJsons, pathIndex, tabHeader, oneTab, request.hasElevation(), request.useMiles));
 
             var routeInfo = $("<div class='route_description'>");
             if (path.description && path.description.length > 0) {

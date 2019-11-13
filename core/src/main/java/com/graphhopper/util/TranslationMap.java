@@ -32,11 +32,12 @@ import static com.graphhopper.util.Helper.*;
  */
 public class TranslationMap {
     // ISO codes (639-1), use 'en_US' as reference
-    private static final List<String> LOCALES = Arrays.asList("ar", "ast", "bg", "ca",
+/*    private static final List<String> LOCALES = Arrays.asList("ar", "ast", "bg", "ca",
             "cs_CZ", "da_DK", "de_DE", "el", "eo", "es", "en_US", "fa", "fil", "fi",
-            "fr_FR", "fr_CH", "gl", "he", "hr_HR", "hsb", "hu_HU", "in_ID", "it", "ja", "ko", "lt_LT", "ne",
+            "fr_FR", "fr_CH", "gl", "he", "hr_HR", "hsb", "hu_HU", "it", "ja", "ko", "lt_LT", "ne",
             "nl", "pl_PL", "pt_BR", "pt_PT", "ro", "ru", "sk", "sl_SI", "sr_RS", "sv_SE", "tr", "uk",
-            "vi_VN", "zh_CN", "zh_HK", "zh_TW");
+            "vi_VI", "zh_CN", "zh_HK");*/
+    private static final List<String> LOCALES = Arrays.asList("nl", "en_US");
     private final Map<String, Translation> translations = new HashMap<>();
 
     public static int countOccurence(String phrase, String splitter) {
@@ -104,7 +105,7 @@ public class TranslationMap {
         if (tr == null) {
             tr = get(locale.getLanguage());
             if (tr == null)
-                tr = get("en");
+                tr = get("nl");
         }
         return tr;
     }
@@ -125,7 +126,7 @@ public class TranslationMap {
      * This method does some checks and fills missing translation from en
      */
     private void postImportHook() {
-        Map<String, String> enMap = get("en").asMap();
+        Map<String, String> enMap = get("nl").asMap();
         StringBuilder sb = new StringBuilder();
         for (Translation tr : translations.values()) {
             Map<String, String> trMap = tr.asMap();

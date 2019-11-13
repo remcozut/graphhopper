@@ -79,7 +79,7 @@ public class PrepareRoutingSubnetworks {
         int unvisitedDeadEnds = 0;
         for (FlagEncoder encoder : encoders) {
             // mark edges for one vehicle as inaccessible
-            DefaultEdgeFilter filter = DefaultEdgeFilter.allEdges(encoder);
+            PrepEdgeFilter filter = new PrepEdgeFilter(encoder);
             if (minOneWayNetworkSize > 0)
                 unvisitedDeadEnds += removeDeadEndUnvisitedNetworks(filter);
 
@@ -104,7 +104,7 @@ public class PrepareRoutingSubnetworks {
     /**
      * This method finds the double linked components according to the specified filter.
      */
-    List<IntArrayList> findSubnetworks(DefaultEdgeFilter filter) {
+    List<IntArrayList> findSubnetworks(PrepEdgeFilter filter) {
         final BooleanEncodedValue accessEnc = filter.getAccessEnc();
         final EdgeExplorer explorer = ghStorage.createEdgeExplorer(filter);
         int locs = ghStorage.getNodes();
@@ -152,7 +152,7 @@ public class PrepareRoutingSubnetworks {
     /**
      * Deletes all but the largest subnetworks.
      */
-    int keepLargeNetworks(DefaultEdgeFilter filter, List<IntArrayList> components) {
+    int keepLargeNetworks(PrepEdgeFilter filter, List<IntArrayList> components) {
         if (components.size() <= 1)
             return 0;
 
@@ -195,7 +195,7 @@ public class PrepareRoutingSubnetworks {
      *
      * @return number of removed edges
      */
-    int removeDeadEndUnvisitedNetworks(final DefaultEdgeFilter bothFilter) {
+    int removeDeadEndUnvisitedNetworks(final PrepEdgeFilter bothFilter) {
         StopWatch sw = new StopWatch(bothFilter.getAccessEnc() + " findComponents").start();
         final EdgeFilter outFilter = DefaultEdgeFilter.outEdges(bothFilter.getAccessEnc());
 
@@ -213,7 +213,7 @@ public class PrepareRoutingSubnetworks {
      *
      * @return number of removed edges
      */
-    int removeEdges(final DefaultEdgeFilter bothFilter, List<IntArrayList> components, int min) {
+    int removeEdges(final PrepEdgeFilter bothFilter, List<IntArrayList> components, int min) {
         // remove edges determined from nodes but only if less than minimum size
         EdgeExplorer explorer = ghStorage.createEdgeExplorer(bothFilter);
         int removedEdges = 0;
@@ -269,5 +269,16 @@ public class PrepareRoutingSubnetworks {
         }
 
         return true;
+    }
+
+    static class PrepEdgeFilter extends DefaultEdgeFilter {
+
+        public PrepEdgeFilter(FlagEncoder encoder) {
+            super(encoder.getAccessEnc(), true, true);
+        }
+
+        public BooleanEncodedValue getAccessEnc() {
+            return accessEnc;
+        }
     }
 }

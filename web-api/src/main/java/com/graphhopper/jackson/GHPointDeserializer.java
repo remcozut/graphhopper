@@ -10,7 +10,7 @@ import java.io.IOException;
 
 class GHPointDeserializer extends JsonDeserializer<GHPoint> {
     @Override
-    public GHPoint deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    public GHPoint deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         double[] bounds = jsonParser.readValueAs(double[].class);
         return GHPoint.fromJson(bounds);
     }

@@ -28,31 +28,47 @@ import com.graphhopper.util.EdgeIterator;
  * @author Karl Hübner
  * @author Peter Karich
  */
-public class TurnCostExtension implements Storable<TurnCostExtension> {
-    static final int NO_TURN_ENTRY = -1;
+public class TurnCostExtension implements GraphExtension {
+    /* pointer for no cost entry */
+    private static final int NO_TURN_ENTRY = -1;
     private static final long EMPTY_FLAGS = 0L;
-    // we store each turn cost entry in the format |from_edge|to_edge|flags|next|. each entry has 4 bytes -> 16 bytes total
-    private static final int TC_FROM = 0;
-    private static final int TC_TO = 4;
-    private static final int TC_FLAGS = 8;
-    private static final int TC_NEXT = 12;
-    private static final int BYTES_PER_ENTRY = 16;
 
-    private NodeAccess nodeAccess;
+    /*
+     * items in turn cost tables: edge from, edge to, getCosts, pointer to next
+     * cost entry of same node
+     */
+    private final int TC_FROM, TC_TO, TC_FLAGS, TC_NEXT;
+
     private DataAccess turnCosts;
+    private int turnCostsEntryIndex = -4;
+    private int turnCostsEntryBytes;
     private int turnCostsCount;
+    private NodeAccess nodeAccess;
 
-    public TurnCostExtension(NodeAccess nodeAccess, DataAccess turnCosts) {
-        this.nodeAccess = nodeAccess;
-        this.turnCosts = turnCosts;
+    public TurnCostExtension() {
+        TC_FROM = nextTurnCostEntryIndex();
+        TC_TO = nextTurnCostEntryIndex();
+        TC_FLAGS = nextTurnCostEntryIndex();
+        TC_NEXT = nextTurnCostEntryIndex();
+        turnCostsEntryBytes = turnCostsEntryIndex + 4;
+        turnCostsCount = 0;
     }
 
-    public TurnCostExtension(TurnCostExtension turnCostExtension) {
-        this.nodeAccess = turnCostExtension.nodeAccess;
-        this.turnCosts =  turnCostExtension.turnCosts;
-        this.turnCostsCount = turnCostExtension.turnCostsCount;
+    @Override
+    public void init(Graph graph, Directory dir) {
+        if (turnCostsCount > 0)
+            throw new AssertionError("The turn cost storage must be initialized only once.");
+
+        this.nodeAccess = graph.getNodeAccess();
+        this.turnCosts = dir.find("turn_costs");
     }
 
+    private int nextTurnCostEntryIndex() {
+        turnCostsEntryIndex += 4;
+        return turnCostsEntryIndex;
+    }
+
+    @Override
     public void setSegmentSize(int bytes) {
         turnCosts.setSegmentSize(bytes);
     }
@@ -65,7 +81,7 @@ public class TurnCostExtension implements Storable<TurnCostExtension> {
 
     @Override
     public void flush() {
-        turnCosts.setHeader(0, BYTES_PER_ENTRY);
+        turnCosts.setHeader(0, turnCostsEntryBytes);
         turnCosts.setHeader(1 * 4, turnCostsCount);
         turnCosts.flush();
     }
@@ -85,9 +101,7 @@ public class TurnCostExtension implements Storable<TurnCostExtension> {
         if (!turnCosts.loadExisting())
             return false;
 
-        if (turnCosts.getHeader(0) != BYTES_PER_ENTRY) {
-            throw new IllegalStateException("Number of bytes per turn cost entry does not match the current configuration: " + turnCosts.getHeader(0) + " vs. " + BYTES_PER_ENTRY);
-        }
+        turnCostsEntryBytes = turnCosts.getHeader(0);
         turnCostsCount = turnCosts.getHeader(4);
         return true;
     }
@@ -122,16 +136,16 @@ public class TurnCostExtension implements Storable<TurnCostExtension> {
         int next = NO_TURN_ENTRY;
 
         // determine if we already have a cost entry for this node
-        int previousEntryIndex = nodeAccess.getTurnCostIndex(viaNode);
+        int previousEntryIndex = nodeAccess.getAdditionalNodeField(viaNode);
         if (previousEntryIndex == NO_TURN_ENTRY) {
             // set cost-pointer to this new cost entry
-            nodeAccess.setTurnCostIndex(viaNode, newEntryIndex);
+            nodeAccess.setAdditionalNodeField(viaNode, newEntryIndex);
         } else {
             int i = 0;
-            next = turnCosts.getInt((long) previousEntryIndex * BYTES_PER_ENTRY + TC_NEXT);
+            next = turnCosts.getInt((long) previousEntryIndex * turnCostsEntryBytes + TC_NEXT);
             long existingFlags = 0;
             while (true) {
-                long costsIdx = (long) previousEntryIndex * BYTES_PER_ENTRY;
+                long costsIdx = (long) previousEntryIndex * turnCostsEntryBytes;
                 if (fromEdge == turnCosts.getInt(costsIdx + TC_FROM)
                         && toEdge == turnCosts.getInt(costsIdx + TC_TO)) {
                     // there is already an entry for this turn
@@ -147,11 +161,11 @@ public class TurnCostExtension implements Storable<TurnCostExtension> {
                     throw new IllegalStateException("Something unexpected happened. A node probably will not have 1000+ relations.");
                 }
                 // get index of next turn cost entry
-                next = turnCosts.getInt((long) next * BYTES_PER_ENTRY + TC_NEXT);
+                next = turnCosts.getInt((long) next * turnCostsEntryBytes + TC_NEXT);
             }
             if (!oldEntryFound) {
                 // set next-pointer to this new cost entry
-                turnCosts.setInt((long) previousEntryIndex * BYTES_PER_ENTRY + TC_NEXT, newEntryIndex);
+                turnCosts.setInt((long) previousEntryIndex * turnCostsEntryBytes + TC_NEXT, newEntryIndex);
             } else if (merge) {
                 newFlags = existingFlags | newFlags;
             } else {
@@ -160,10 +174,10 @@ public class TurnCostExtension implements Storable<TurnCostExtension> {
         }
         long costsBase; // where to (over)write
         if (!oldEntryFound) {
-            costsBase = (long) newEntryIndex * BYTES_PER_ENTRY;
+            costsBase = (long) newEntryIndex * turnCostsEntryBytes;
             turnCostsCount++;
         } else {
-            costsBase = (long) previousEntryIndex * BYTES_PER_ENTRY;
+            costsBase = (long) previousEntryIndex * turnCostsEntryBytes;
         }
         turnCosts.setInt(costsBase + TC_FROM, fromEdge);
         turnCosts.setInt(costsBase + TC_TO, toEdge);
@@ -175,7 +189,7 @@ public class TurnCostExtension implements Storable<TurnCostExtension> {
      * @return turn flags of the specified node and edge properties.
      */
     public long getTurnCostFlags(int edgeFrom, int nodeVia, int edgeTo) {
-        if (!EdgeIterator.Edge.isValid(edgeFrom) || !EdgeIterator.Edge.isValid(edgeTo))
+        if (edgeFrom == EdgeIterator.NO_EDGE || edgeTo == EdgeIterator.NO_EDGE)
             throw new IllegalArgumentException("from and to edge cannot be NO_EDGE");
         if (nodeVia < 0)
             throw new IllegalArgumentException("via node cannot be negative");
@@ -183,23 +197,15 @@ public class TurnCostExtension implements Storable<TurnCostExtension> {
         return nextCostFlags(edgeFrom, nodeVia, edgeTo);
     }
 
-    public boolean isUTurn(int edgeFrom, int edgeTo) {
-        return edgeFrom == edgeTo;
-    }
-
-    public boolean isUTurnAllowed(int node) {
-        return true;
-    }
-
-    private long nextCostFlags(int fromEdge, int viaNode, int toEdge) {
-        int turnCostIndex = nodeAccess.getTurnCostIndex(viaNode);
+    private long nextCostFlags(int edgeFrom, int nodeVia, int edgeTo) {
+        int turnCostIndex = nodeAccess.getAdditionalNodeField(nodeVia);
         int i = 0;
         for (; i < 1000; i++) {
             if (turnCostIndex == NO_TURN_ENTRY)
                 break;
-            long turnCostPtr = (long) turnCostIndex * BYTES_PER_ENTRY;
-            if (fromEdge == turnCosts.getInt(turnCostPtr + TC_FROM)) {
-                if (toEdge == turnCosts.getInt(turnCostPtr + TC_TO))
+            long turnCostPtr = (long) turnCostIndex * turnCostsEntryBytes;
+            if (edgeFrom == turnCosts.getInt(turnCostPtr + TC_FROM)) {
+                if (edgeTo == turnCosts.getInt(turnCostPtr + TC_TO))
                     return turnCosts.getInt(turnCostPtr + TC_FLAGS);
             }
 
@@ -216,13 +222,42 @@ public class TurnCostExtension implements Storable<TurnCostExtension> {
     }
 
     private void ensureTurnCostIndex(int nodeIndex) {
-        turnCosts.ensureCapacity(((long) nodeIndex + 4) * BYTES_PER_ENTRY);
+        turnCosts.ensureCapacity(((long) nodeIndex + 4) * turnCostsEntryBytes);
     }
 
-    public TurnCostExtension copyTo(TurnCostExtension turnCostExtension) {
-        turnCosts.copyTo(turnCostExtension.turnCosts);
-        turnCostExtension.turnCostsCount = turnCostsCount;
-        return turnCostExtension;
+    @Override
+    public boolean isRequireNodeField() {
+        //we require the additional field in the graph to point to the first entry in the node table
+        return true;
+    }
+
+    @Override
+    public boolean isRequireEdgeField() {
+        return false;
+    }
+
+    @Override
+    public int getDefaultNodeFieldValue() {
+        return NO_TURN_ENTRY;
+    }
+
+    @Override
+    public int getDefaultEdgeFieldValue() {
+        throw new UnsupportedOperationException("Not supported by this storage");
+    }
+
+    @Override
+    public GraphExtension copyTo(GraphExtension clonedStorage) {
+        if (!(clonedStorage instanceof TurnCostExtension)) {
+            throw new IllegalStateException("the extended storage to clone must be the same");
+        }
+
+        TurnCostExtension clonedTC = (TurnCostExtension) clonedStorage;
+
+        turnCosts.copyTo(clonedTC.turnCosts);
+        clonedTC.turnCostsCount = turnCostsCount;
+
+        return clonedStorage;
     }
 
     @Override

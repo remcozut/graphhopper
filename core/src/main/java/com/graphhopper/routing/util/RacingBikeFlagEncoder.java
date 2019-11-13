@@ -26,6 +26,7 @@ import static com.graphhopper.routing.util.PriorityCode.*;
 
 /**
  * Specifies the settings for race biking
+ * <p>
  *
  * @author ratrun
  * @author Peter Karich
@@ -36,9 +37,12 @@ public class RacingBikeFlagEncoder extends BikeCommonFlagEncoder {
     }
 
     public RacingBikeFlagEncoder(PMap properties) {
-        this((int) properties.getLong("speed_bits", 4),
+        this(
+                (int) properties.getLong("speed_bits", 4),
                 properties.getDouble("speed_factor", 2),
-                properties.getBool("turn_costs", false) ? 1 : 0);
+                properties.getBool("turn_costs", false) ? 1 : 0
+        );
+        this.properties = properties;
         this.setBlockFords(properties.getBool("block_fords", true));
     }
 
@@ -55,31 +59,34 @@ public class RacingBikeFlagEncoder extends BikeCommonFlagEncoder {
         preferHighwayTags.add("tertiary_link");
         preferHighwayTags.add("residential");
 
-        setTrackTypeSpeed("grade1", 20); // paved
-        setTrackTypeSpeed("grade2", 10); // now unpaved ...
+        final int CYCLEWAY_SPEED = 24;  // Make sure cycleway and path use same speed value, see #634
+
+
+        setTrackTypeSpeed("grade1", CYCLEWAY_SPEED); // paved
+        setTrackTypeSpeed("grade2", CYCLEWAY_SPEED / 2); // now unpaved ...
         setTrackTypeSpeed("grade3", PUSHING_SECTION_SPEED);
         setTrackTypeSpeed("grade4", PUSHING_SECTION_SPEED);
         setTrackTypeSpeed("grade5", PUSHING_SECTION_SPEED);
 
-        setSurfaceSpeed("paved", 20);
-        setSurfaceSpeed("asphalt", 20);
-        setSurfaceSpeed("cobblestone", 10);
-        setSurfaceSpeed("cobblestone:flattened", 10);
-        setSurfaceSpeed("sett", 10);
-        setSurfaceSpeed("concrete", 20);
-        setSurfaceSpeed("concrete:lanes", 16);
-        setSurfaceSpeed("concrete:plates", 16);
-        setSurfaceSpeed("paving_stones", 10);
-        setSurfaceSpeed("paving_stones:30", 10);
-        setSurfaceSpeed("unpaved", PUSHING_SECTION_SPEED / 2);
-        setSurfaceSpeed("compacted", PUSHING_SECTION_SPEED / 2);
-        setSurfaceSpeed("dirt", PUSHING_SECTION_SPEED / 2);
-        setSurfaceSpeed("earth", PUSHING_SECTION_SPEED / 2);
+        setSurfaceSpeed("paved", CYCLEWAY_SPEED );
+        setSurfaceSpeed("asphalt", CYCLEWAY_SPEED );
+        setSurfaceSpeed("cobblestone", 20);
+        setSurfaceSpeed("cobblestone:flattened", 20);
+        setSurfaceSpeed("sett", 20);
+        setSurfaceSpeed("concrete", CYCLEWAY_SPEED );
+        setSurfaceSpeed("concrete:lanes", CYCLEWAY_SPEED );
+        setSurfaceSpeed("concrete:plates", CYCLEWAY_SPEED );
+        setSurfaceSpeed("paving_stones", CYCLEWAY_SPEED );
+        setSurfaceSpeed("paving_stones:30", CYCLEWAY_SPEED );
+        setSurfaceSpeed("unpaved", PUSHING_SECTION_SPEED);
+        setSurfaceSpeed("compacted", CYCLEWAY_SPEED  / 2);
+        setSurfaceSpeed("dirt", PUSHING_SECTION_SPEED );
+        setSurfaceSpeed("earth", PUSHING_SECTION_SPEED);
         setSurfaceSpeed("fine_gravel", PUSHING_SECTION_SPEED);
-        setSurfaceSpeed("grass", PUSHING_SECTION_SPEED / 2);
-        setSurfaceSpeed("grass_paver", PUSHING_SECTION_SPEED / 2);
-        setSurfaceSpeed("gravel", PUSHING_SECTION_SPEED / 2);
-        setSurfaceSpeed("ground", PUSHING_SECTION_SPEED / 2);
+        setSurfaceSpeed("grass", PUSHING_SECTION_SPEED );
+        setSurfaceSpeed("grass_paver", PUSHING_SECTION_SPEED);
+        setSurfaceSpeed("gravel", PUSHING_SECTION_SPEED );
+        setSurfaceSpeed("ground", PUSHING_SECTION_SPEED );
         setSurfaceSpeed("ice", PUSHING_SECTION_SPEED / 2);
         setSurfaceSpeed("metal", PUSHING_SECTION_SPEED / 2);
         setSurfaceSpeed("mud", PUSHING_SECTION_SPEED / 2);
@@ -88,33 +95,32 @@ public class RacingBikeFlagEncoder extends BikeCommonFlagEncoder {
         setSurfaceSpeed("sand", PUSHING_SECTION_SPEED / 2);
         setSurfaceSpeed("wood", PUSHING_SECTION_SPEED / 2);
 
-        setHighwaySpeed("cycleway", 18);
-        setHighwaySpeed("path", 8);
-        setHighwaySpeed("footway", 6);
-        setHighwaySpeed("pedestrian", 6);
-        setHighwaySpeed("road", 12);
-        setHighwaySpeed("track", PUSHING_SECTION_SPEED / 2); // assume unpaved
-        setHighwaySpeed("service", 12);
-        setHighwaySpeed("unclassified", 16);
-        setHighwaySpeed("residential", 16);
+        setHighwaySpeed("cycleway", CYCLEWAY_SPEED);
+        setHighwaySpeed("path", PUSHING_SECTION_SPEED );
+        setHighwaySpeed("footway", PUSHING_SECTION_SPEED );
+        setHighwaySpeed("pedestrian", PUSHING_SECTION_SPEED );
+        setHighwaySpeed("road", CYCLEWAY_SPEED);
+        setHighwaySpeed("track", PUSHING_SECTION_SPEED ); // assume unpaved
+        setHighwaySpeed("service", 16);
+        setHighwaySpeed("unclassified", 18);
+        setHighwaySpeed("residential", 18);
 
-        setHighwaySpeed("trunk", 20);
-        setHighwaySpeed("trunk_link", 20);
-        setHighwaySpeed("primary", 20);
-        setHighwaySpeed("primary_link", 20);
-        setHighwaySpeed("secondary", 20);
-        setHighwaySpeed("secondary_link", 20);
-        setHighwaySpeed("tertiary", 20);
-        setHighwaySpeed("tertiary_link", 20);
+        setHighwaySpeed("trunk", CYCLEWAY_SPEED);
+        setHighwaySpeed("trunk_link", CYCLEWAY_SPEED);
+        setHighwaySpeed("primary", CYCLEWAY_SPEED);
+        setHighwaySpeed("primary_link", CYCLEWAY_SPEED);
+        setHighwaySpeed("secondary", CYCLEWAY_SPEED);
+        setHighwaySpeed("secondary_link", CYCLEWAY_SPEED);
+        setHighwaySpeed("tertiary", CYCLEWAY_SPEED);
+        setHighwaySpeed("tertiary_link", CYCLEWAY_SPEED);
 
         addPushingSection("path");
         addPushingSection("footway");
-        addPushingSection("platform");
         addPushingSection("pedestrian");
         addPushingSection("steps");
 
-        setCyclingNetworkPreference("icn", PriorityCode.BEST.getValue());
-        setCyclingNetworkPreference("ncn", PriorityCode.BEST.getValue());
+        setCyclingNetworkPreference("icn", PriorityCode.VERY_NICE.getValue());
+        setCyclingNetworkPreference("ncn", PriorityCode.VERY_NICE.getValue());
         setCyclingNetworkPreference("rcn", PriorityCode.VERY_NICE.getValue());
         setCyclingNetworkPreference("lcn", PriorityCode.UNCHANGED.getValue());
         setCyclingNetworkPreference("mtb", PriorityCode.UNCHANGED.getValue());
@@ -125,6 +131,16 @@ public class RacingBikeFlagEncoder extends BikeCommonFlagEncoder {
         setSpecificClassBicycle("roadcycling");
 
         init();
+    }
+
+    @Override
+    public int getVersion() {
+        return 2;
+    }
+
+    @Override
+    public boolean hasNodeNameReferences() {
+        return false;
     }
 
     @Override
@@ -157,11 +173,6 @@ public class RacingBikeFlagEncoder extends BikeCommonFlagEncoder {
     boolean isSacScaleAllowed(String sacScale) {
         // for racing bike it is only allowed if empty
         return false;
-    }
-
-    @Override
-    public int getVersion() {
-        return 2;
     }
 
     @Override

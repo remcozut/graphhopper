@@ -17,14 +17,14 @@
  */
 package com.graphhopper.routing.util;
 
-import com.graphhopper.reader.OSMTurnRelation;
 import com.graphhopper.reader.ReaderRelation;
 import com.graphhopper.reader.ReaderWay;
 import com.graphhopper.routing.profiles.BooleanEncodedValue;
-import com.graphhopper.routing.profiles.Roundabout;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.BitUtil;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.*;
 
@@ -32,6 +32,8 @@ import static org.junit.Assert.*;
  * @author Peter Karich
  */
 public class EncodingManagerTest {
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testCompatibility() {
@@ -45,20 +47,19 @@ public class EncodingManagerTest {
         assertNotEquals(car.hashCode(), foot.hashCode());
 
         FootFlagEncoder foot2 = new FootFlagEncoder();
-        EncodingManager.create(foot2);
+        EncodingManager manager2 = EncodingManager.create(foot2);
         assertNotEquals(foot, foot2);
         assertNotEquals(foot.hashCode(), foot2.hashCode());
 
         FootFlagEncoder foot3 = new FootFlagEncoder();
-        EncodingManager.create(foot3);
+        EncodingManager manager3 = EncodingManager.create(foot3);
         assertEquals(foot3, foot2);
         assertEquals(foot3.hashCode(), foot2.hashCode());
 
         try {
             EncodingManager.create("car,car");
-            fail("there should have been an exception, do not allow duplicate flag encoders");
+            assertTrue("do not allow duplicate flag encoders", false);
         } catch (Exception ex) {
-            // ok
         }
     }
 
@@ -70,22 +71,40 @@ public class EncodingManagerTest {
     }
 
     @Test
+    public void testEncoderWithWrongVersionIsRejected() {
+        thrown.expect(IllegalArgumentException.class);
+        EncodingManager manager = EncodingManager.create("car|version=0");
+    }
+
+    @Test
     public void testWrongEncoders() {
         try {
             FootFlagEncoder foot = new FootFlagEncoder();
             EncodingManager.create(foot, foot);
-            fail("There should have been an exception");
+            assertTrue(false);
         } catch (Exception ex) {
             assertEquals("You must not register a FlagEncoder (foot) twice!", ex.getMessage());
+        }
+
+        try {
+            EncodingManager.create(new FootFlagEncoder(), new CarFlagEncoder(), new BikeFlagEncoder(), new MountainBikeFlagEncoder(), new RacingBikeFlagEncoder());
+            assertTrue(false);
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Encoders are requesting 36 bits, more than 32 bits of edge flags"));
         }
     }
 
     @Test
     public void testToDetailsStringIncludesEncoderVersionNumber() {
-        FlagEncoder encoder = new AbstractFlagEncoder(1, 2.0, 3) {
+        FlagEncoder encoder = new AbstractFlagEncoder(1, 2.0, 3, 1) {
             @Override
             public int getVersion() {
                 return 10;
+            }
+
+            @Override
+            public boolean hasNodeNameReferences() {
+                return false;
             }
 
             @Override
@@ -96,11 +115,6 @@ public class EncodingManagerTest {
             @Override
             protected String getPropertiesString() {
                 return "my_properties";
-            }
-
-            @Override
-            public boolean acceptsTurnRelation(OSMTurnRelation relation) {
-                return relation.isVehicleTypeConcernedByTurnRestriction(restrictions);
             }
 
             @Override
@@ -121,7 +135,7 @@ public class EncodingManagerTest {
 
         EncodingManager subject = EncodingManager.create(encoder);
 
-        assertEquals("new_encoder|my_properties|version=10", subject.toFlagEncodersAsString());
+        assertEquals("new_encoder|my_properties|version=10", subject.toDetailsString());
     }
 
     @Test
@@ -195,6 +209,16 @@ public class EncodingManagerTest {
                 > mtbEncoder.relationCodeEncoder.getValue(flags.ints[0]));
     }
 
+    public void testFullBitMask() {
+        BitUtil bitUtil = BitUtil.LITTLE;
+        EncodingManager manager = EncodingManager.create("car,foot");
+        AbstractFlagEncoder carr = (AbstractFlagEncoder) manager.getEncoder("car");
+        assertTrue(bitUtil.toBitString(carr.getNodeBitMask()).endsWith("00000000001111111"));
+
+        AbstractFlagEncoder foot = (AbstractFlagEncoder) manager.getEncoder("foot");
+        assertTrue(bitUtil.toBitString(foot.getNodeBitMask()).endsWith("00011111110000000"));
+    }
+
     @Test
     public void testFixWayName() {
         assertEquals("B8, B12", EncodingManager.fixWayName("B8;B12"));
@@ -203,7 +227,7 @@ public class EncodingManagerTest {
 
     @Test
     public void testCompatibilityBug() {
-        EncodingManager manager2 = EncodingManager.create(new DefaultFlagEncoderFactory(), "bike2");
+        EncodingManager manager2 = EncodingManager.create(FlagEncoderFactory.DEFAULT, "bike2", 8);
         ReaderWay osmWay = new ReaderWay(1);
         osmWay.setTag("highway", "footway");
         osmWay.setTag("name", "test");
@@ -216,7 +240,7 @@ public class EncodingManagerTest {
         assertEquals(4, singleSpeed, 1e-3);
         assertEquals(singleSpeed, singleBikeEnc.getSpeed(true, flags), 1e-3);
 
-        EncodingManager manager = EncodingManager.create(new DefaultFlagEncoderFactory(), "bike2,bike,foot");
+        EncodingManager manager = EncodingManager.create(FlagEncoderFactory.DEFAULT, "bike2,bike,foot", 8);
         FootFlagEncoder foot = (FootFlagEncoder) manager.getEncoder("foot");
         BikeFlagEncoder bike = (BikeFlagEncoder) manager.getEncoder("bike2");
 
@@ -234,7 +258,7 @@ public class EncodingManagerTest {
     public void testSupportFords() {
         // 1) no encoder crossing fords
         String flagEncodersStr = "car,bike,foot";
-        EncodingManager manager = EncodingManager.create(new DefaultFlagEncoderFactory(), flagEncodersStr);
+        EncodingManager manager = EncodingManager.create(FlagEncoderFactory.DEFAULT, flagEncodersStr, 8);
 
         assertTrue(((AbstractFlagEncoder) manager.getEncoder("car")).isBlockFords());
         assertTrue(((AbstractFlagEncoder) manager.getEncoder("bike")).isBlockFords());
@@ -242,7 +266,7 @@ public class EncodingManagerTest {
 
         // 2) two encoders crossing fords
         flagEncodersStr = "car,bike|block_fords=false,foot|block_fords=false";
-        manager = EncodingManager.create(new DefaultFlagEncoderFactory(), flagEncodersStr);
+        manager = EncodingManager.create(FlagEncoderFactory.DEFAULT, flagEncodersStr, 8);
 
         assertTrue(((AbstractFlagEncoder) manager.getEncoder("car")).isBlockFords());
         assertFalse(((AbstractFlagEncoder) manager.getEncoder("bike")).isBlockFords());
@@ -250,7 +274,7 @@ public class EncodingManagerTest {
 
         // 2) Try combined with another tag
         flagEncodersStr = "car|turn_costs=true|block_fords=true,bike,foot|block_fords=false";
-        manager = EncodingManager.create(new DefaultFlagEncoderFactory(), flagEncodersStr);
+        manager = EncodingManager.create(FlagEncoderFactory.DEFAULT, flagEncodersStr, 8);
 
         assertTrue(((AbstractFlagEncoder) manager.getEncoder("car")).isBlockFords());
         assertTrue(((AbstractFlagEncoder) manager.getEncoder("bike")).isBlockFords());
@@ -259,12 +283,12 @@ public class EncodingManagerTest {
 
     @Test
     public void testSharedEncodedValues() {
-        EncodingManager manager = EncodingManager.create("car,foot,bike,motorcycle,mtb");
+        EncodingManager manager = EncodingManager.create("car,foot,bike,motorcycle,mtb", 8);
 
         for (FlagEncoder tmp : manager.fetchEdgeEncoders()) {
             AbstractFlagEncoder encoder = (AbstractFlagEncoder) tmp;
             BooleanEncodedValue accessEnc = encoder.getAccessEnc();
-            BooleanEncodedValue roundaboutEnc = manager.getBooleanEncodedValue(Roundabout.KEY);
+            BooleanEncodedValue roundaboutEnc = manager.getBooleanEncodedValue(EncodingManager.ROUNDABOUT);
 
             ReaderWay way = new ReaderWay(1);
             way.setTag("highway", "primary");

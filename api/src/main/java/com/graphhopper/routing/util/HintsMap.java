@@ -73,4 +73,16 @@ public class HintsMap extends PMap {
             super.put("vehicle", v);
         return this;
     }
+
+
+    public int getVersionCode() {
+        return Integer.parseInt(super.get("versioncode", "0"));
+    }
+
+    public HintsMap setVersionCode(int v) {
+            super.put("versioncode", v);
+        return this;
+    }
+
+
 }

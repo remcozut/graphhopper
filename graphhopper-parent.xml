@@ -1,0 +1,812 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="graphhopper-parent" default="all">
+  
+  
+  <property file="graphhopper-parent.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/*.yarb/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.egg"/>
+    <include name="*.jar"/>
+    <include name="*.ear"/>
+    <include name="*.swc"/>
+    <include name="*.war"/>
+    <include name="*.zip"/>
+    <include name="*.ane"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+    <exclude name="**/?*.aj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.8" value="${jdk.home.1.8}/bin"/>
+  <path id="jdk.classpath.1.8">
+    <fileset dir="${jdk.home.1.8}">
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/ext/access-bridge-64.jar"/>
+      <include name="jre/lib/ext/cldrdata.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/jaccess.jar"/>
+      <include name="jre/lib/ext/jfxrt.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/nashorn.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunmscapi.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/jfxswt.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.8}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.8}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.8"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.maven:_ch.qos.logback:logback-access:1.2.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/ch/qos/logback/logback-access/1.2.3/logback-access-1.2.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_ch.qos.logback:logback-classic:1.2.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_ch.qos.logback:logback-core:1.2.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.carrotsearch:hppc:0.8.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/carrotsearch/hppc/0.8.1/hppc-0.8.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.core:jackson-annotations:2.9.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.core:jackson-core:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-core/2.9.6/jackson-core-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.core:jackson-databind:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-databind/2.9.6/jackson-databind-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.9.6/jackson-dataformat-yaml-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/datatype/jackson-datatype-guava/2.9.6/jackson-datatype-guava-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.6/jackson-datatype-jdk8-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.datatype:jackson-datatype-joda:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/datatype/jackson-datatype-joda/2.9.6/jackson-datatype-joda-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.9.6/jackson-datatype-jsr310-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/jaxrs/jackson-jaxrs-base/2.9.6/jackson-jaxrs-base-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/jaxrs/jackson-jaxrs-json-provider/2.9.6/jackson-jaxrs-json-provider-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.module:jackson-module-afterburner:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/module/jackson-module-afterburner/2.9.6/jackson-module-afterburner-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.9.6/jackson-module-jaxb-annotations-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml.jackson.module:jackson-module-parameter-names:2.9.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/jackson/module/jackson-module-parameter-names/2.9.6/jackson-module-parameter-names-2.9.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.fasterxml:classmate:1.3.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/fasterxml/classmate/1.3.1/classmate-1.3.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.google.code.findbugs:jsr305:1.3.9.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.google.code.findbugs:jsr305:3.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.google.code.gson:gson:2.8.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/google/code/gson/gson/2.8.1/gson-2.8.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.google.errorprone:error_prone_annotations:2.1.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/google/errorprone/error_prone_annotations/2.1.3/error_prone_annotations-2.1.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.google.guava:guava:24.0-jre.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/google/guava/guava/24.0-jre/guava-24.0-jre.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.google.j2objc:j2objc-annotations:1.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.google.protobuf:protobuf-java:2.6.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/google/protobuf/protobuf-java/2.6.1/protobuf-java-2.6.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.google.protobuf:protobuf-java:3.4.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/google/protobuf/protobuf-java/3.4.0/protobuf-java-3.4.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.google.transit:gtfs-realtime-bindings:0.0.4.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/google/transit/gtfs-realtime-bindings/0.0.4/gtfs-realtime-bindings-0.0.4.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.graphhopper.external:jackson-datatype-jts:0.12-2.5-1.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/graphhopper/external/jackson-datatype-jts/0.12-2.5-1/jackson-datatype-jts-0.12-2.5-1.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.graphhopper:directions-api-client:0.10.1-3.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/graphhopper/directions-api-client/0.10.1-3/directions-api-client-0.10.1-3.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.papertrail:profiler:1.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/papertrail/profiler/1.0.2/profiler-1.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.squareup.okhttp3:okhttp:3.8.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.squareup.okhttp:logging-interceptor:2.7.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/squareup/okhttp/logging-interceptor/2.7.5/logging-interceptor-2.7.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.squareup.okhttp:okhttp:2.7.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/squareup/okhttp/okhttp/2.7.5/okhttp-2.7.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.squareup.okio:okio:1.13.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/squareup/okio/okio/1.13.0/okio-1.13.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_commons-io:commons-io:1.3.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_commons-io:commons-io:2.4.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-io/commons-io/2.4/commons-io-2.4.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard-bundles:dropwizard-configurable-assets-bundle:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard-bundles/dropwizard-configurable-assets-bundle/1.3.5/dropwizard-configurable-assets-bundle-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard.metrics:metrics-annotation:4.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-annotation/4.0.2/metrics-annotation-4.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard.metrics:metrics-core:4.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-core/4.0.2/metrics-core-4.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard.metrics:metrics-healthchecks:4.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-healthchecks/4.0.2/metrics-healthchecks-4.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard.metrics:metrics-jersey2:4.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-jersey2/4.0.2/metrics-jersey2-4.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard.metrics:metrics-jetty9:4.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-jetty9/4.0.2/metrics-jetty9-4.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard.metrics:metrics-jmx:4.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-jmx/4.0.2/metrics-jmx-4.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard.metrics:metrics-json:4.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-json/4.0.2/metrics-json-4.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard.metrics:metrics-jvm:4.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-jvm/4.0.2/metrics-jvm-4.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard.metrics:metrics-logback:4.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-logback/4.0.2/metrics-logback-4.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard.metrics:metrics-servlets:4.0.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-servlets/4.0.2/metrics-servlets-4.0.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-configuration:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-configuration/1.3.5/dropwizard-configuration-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-core:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-core/1.3.5/dropwizard-core-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-jackson:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-jackson/1.3.5/dropwizard-jackson-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-jersey:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-jersey/1.3.5/dropwizard-jersey-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-jetty:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-jetty/1.3.5/dropwizard-jetty-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-lifecycle:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-lifecycle/1.3.5/dropwizard-lifecycle-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-logging:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-logging/1.3.5/dropwizard-logging-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-metrics:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-metrics/1.3.5/dropwizard-metrics-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-request-logging:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-request-logging/1.3.5/dropwizard-request-logging-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-servlets:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-servlets/1.3.5/dropwizard-servlets-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-testing:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-testing/1.3.5/dropwizard-testing-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-util:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-util/1.3.5/dropwizard-util-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.dropwizard:dropwizard-validation:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/dropwizard/dropwizard-validation/1.3.5/dropwizard-validation-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.gsonfire:gson-fire:1.8.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/gsonfire/gson-fire/1.8.0/gson-fire-1.8.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_io.swagger:swagger-annotations:1.5.15.classpath">
+    <pathelement location="${path.variable.maven_repository}/io/swagger/swagger-annotations/1.5.15/swagger-annotations-1.5.15.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.activation:activation:1.1.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/activation/activation/1.1.1/activation-1.1.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.annotation:javax.annotation-api:1.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.servlet:javax.servlet-api:3.1.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.validation:validation-api:1.1.0.final.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.ws.rs:javax.ws.rs-api:2.0.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/ws/rs/javax.ws.rs-api/2.0.1/javax.ws.rs-api-2.0.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.xml.bind:jaxb-api:2.3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.xml.soap:javax.xml.soap-api:1.4.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/xml/soap/javax.xml.soap-api/1.4.0/javax.xml.soap-api-1.4.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.xml.ws:jaxws-api:2.3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/xml/ws/jaxws-api/2.3.0/jaxws-api-2.3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_joda-time:joda-time:2.9.9.classpath">
+    <pathelement location="${path.variable.maven_repository}/joda-time/joda-time/2.9.9/joda-time-2.9.9.jar"/>
+  </path>
+  
+  <path id="library.maven:_junit:junit:4.12.classpath">
+    <pathelement location="${path.variable.maven_repository}/junit/junit/4.12/junit-4.12.jar"/>
+  </path>
+  
+  <path id="library.maven:_log4j:log4j:1.2.17.classpath">
+    <pathelement location="${path.variable.maven_repository}/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
+  </path>
+  
+  <path id="library.maven:_net.bytebuddy:byte-buddy-agent:1.9.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/net/bytebuddy/byte-buddy-agent/1.9.0/byte-buddy-agent-1.9.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_net.bytebuddy:byte-buddy:1.9.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/net/bytebuddy/byte-buddy/1.9.0/byte-buddy-1.9.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_net.sourceforge.argparse4j:argparse4j:0.8.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/net/sourceforge/argparse4j/argparse4j/0.8.1/argparse4j-0.8.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_net.sourceforge.javacsv:javacsv:2.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/net/sourceforge/javacsv/javacsv/2.0/javacsv-2.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.commons:commons-compress:1.15.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/commons/commons-compress/1.15/commons-compress-1.15.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.commons:commons-lang3:3.7.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.7/commons-lang3-3.7.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.commons:commons-text:1.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/commons/commons-text/1.2/commons-text-1.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.xmlgraphics:xmlgraphics-commons:2.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.3/xmlgraphics-commons-2.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.assertj:assertj-core:3.6.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/assertj/assertj-core/3.6.2/assertj-core-3.6.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.assertj:assertj-core:3.9.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/assertj/assertj-core/3.9.1/assertj-core-3.9.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.checkerframework:checker-compat-qual:2.0.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/checkerframework/checker-compat-qual/2.0.0/checker-compat-qual-2.0.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.mojo:animal-sniffer-annotations:1.14.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty.toolchain.setuid:jetty-setuid-java:1.0.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/toolchain/setuid/jetty-setuid-java/1.0.3/jetty-setuid-java-1.0.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty:jetty-continuation:9.4.11.v20180605.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/jetty-continuation/9.4.11.v20180605/jetty-continuation-9.4.11.v20180605.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty:jetty-http:9.4.11.v20180605.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/jetty-http/9.4.11.v20180605/jetty-http-9.4.11.v20180605.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty:jetty-io:9.4.11.v20180605.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/jetty-io/9.4.11.v20180605/jetty-io-9.4.11.v20180605.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty:jetty-security:9.4.11.v20180605.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/jetty-security/9.4.11.v20180605/jetty-security-9.4.11.v20180605.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty:jetty-server:9.4.11.v20180605.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/jetty-server/9.4.11.v20180605/jetty-server-9.4.11.v20180605.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty:jetty-servlet:9.4.11.v20180605.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/jetty-servlet/9.4.11.v20180605/jetty-servlet-9.4.11.v20180605.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty:jetty-servlets:9.4.11.v20180605.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/jetty-servlets/9.4.11.v20180605/jetty-servlets-9.4.11.v20180605.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty:jetty-util:9.4.11.v20180605.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/jetty-util/9.4.11.v20180605/jetty-util-9.4.11.v20180605.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty:jetty-webapp:9.4.11.v20180605.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/jetty-webapp/9.4.11.v20180605/jetty-webapp-9.4.11.v20180605.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.eclipse.jetty:jetty-xml:9.4.11.v20180605.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/eclipse/jetty/jetty-xml/9.4.11.v20180605/jetty-xml-9.4.11.v20180605.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b32.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/hk2/external/aopalliance-repackaged/2.5.0-b32/aopalliance-repackaged-2.5.0-b32.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.hk2.external:javax.inject:2.5.0-b32.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/hk2/external/javax.inject/2.5.0-b32/javax.inject-2.5.0-b32.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.hk2:hk2-api:2.5.0-b32.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/hk2/hk2-api/2.5.0-b32/hk2-api-2.5.0-b32.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.hk2:hk2-locator:2.5.0-b32.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/hk2/hk2-locator/2.5.0-b32/hk2-locator-2.5.0-b32.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.hk2:hk2-utils:2.5.0-b32.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/hk2/hk2-utils/2.5.0-b32/hk2-utils-2.5.0-b32.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.hk2:osgi-resource-locator:1.0.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/hk2/osgi-resource-locator/1.0.1/osgi-resource-locator-1.0.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.bundles.repackaged:jersey-guava:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/bundles/repackaged/jersey-guava/2.25.1/jersey-guava-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.containers:jersey-container-servlet-core:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/containers/jersey-container-servlet-core/2.25.1/jersey-container-servlet-core-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.containers:jersey-container-servlet:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/containers/jersey-container-servlet/2.25.1/jersey-container-servlet-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.core:jersey-client:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/core/jersey-client/2.25.1/jersey-client-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.core:jersey-common:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/core/jersey-common/2.25.1/jersey-common-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.core:jersey-server:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/core/jersey-server/2.25.1/jersey-server-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.ext:jersey-bean-validation:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/ext/jersey-bean-validation/2.25.1/jersey-bean-validation-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.ext:jersey-metainf-services:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/ext/jersey-metainf-services/2.25.1/jersey-metainf-services-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.media:jersey-media-jaxb:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/media/jersey-media-jaxb/2.25.1/jersey-media-jaxb-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/test-framework/providers/jersey-test-framework-provider-inmemory/2.25.1/jersey-test-framework-provider-inmemory-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish.jersey.test-framework:jersey-test-framework-core:2.25.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/jersey/test-framework/jersey-test-framework-core/2.25.1/jersey-test-framework-core-2.25.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.glassfish:javax.el:3.0.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/glassfish/javax.el/3.0.0/javax.el-3.0.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.hamcrest:hamcrest-core:1.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.hamcrest:hamcrest-library:1.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/hamcrest/hamcrest-library/1.3/hamcrest-library-1.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.hibernate:hibernate-validator:5.4.2.final.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/hibernate/hibernate-validator/5.4.2.Final/hibernate-validator-5.4.2.Final.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.javassist:javassist:3.22.0-ga.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/javassist/javassist/3.22.0-GA/javassist-3.22.0-GA.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.jboss.logging:jboss-logging:3.3.0.final.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/jboss/logging/jboss-logging/3.3.0.Final/jboss-logging-3.3.0.Final.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.locationtech.jts:jts-core:1.15.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/locationtech/jts/jts-core/1.15.1/jts-core-1.15.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.mapdb:mapdb:1.0.8.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/mapdb/mapdb/1.0.8/mapdb-1.0.8.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.mockito:mockito-core:2.23.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/mockito/mockito-core/2.23.0/mockito-core-2.23.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.objenesis:objenesis:2.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/objenesis/objenesis/2.6/objenesis-2.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.openstreetmap.osmosis:osmosis-osm-binary:0.46.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/openstreetmap/osmosis/osmosis-osm-binary/0.46/osmosis-osm-binary-0.46.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.slf4j:jcl-over-slf4j:1.7.25.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/slf4j/jcl-over-slf4j/1.7.25/jcl-over-slf4j-1.7.25.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.slf4j:jul-to-slf4j:1.7.25.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/slf4j/jul-to-slf4j/1.7.25/jul-to-slf4j-1.7.25.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.slf4j:log4j-over-slf4j:1.7.25.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/slf4j/log4j-over-slf4j/1.7.25/log4j-over-slf4j-1.7.25.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.slf4j:slf4j-api:1.7.25.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.slf4j:slf4j-log4j12:1.7.25.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/slf4j/slf4j-log4j12/1.7.25/slf4j-log4j12-1.7.25.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.threeten:threetenbp:1.3.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/threeten/threetenbp/1.3.5/threetenbp-1.3.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.yaml:snakeyaml:1.18.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/yaml/snakeyaml/1.18/snakeyaml-1.18.jar"/>
+  </path>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <fileset dir="${javac2.home}">
+      <include name="javac2.jar"/>
+      <include name="jdom.jar"/>
+      <include name="asm-all*.jar"/>
+      <include name="forms-*.jar"/>
+    </fileset>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  <import file="${basedir}/api/module_graphhopper-api.xml"/>
+  
+  <import file="${basedir}/module_graphhopper-parent.xml"/>
+  
+  <import file="${basedir}/web-api/module_graphhopper-web-api.xml"/>
+  
+  <import file="${basedir}/client-hc/module_directions-api-client-hc.xml"/>
+  
+  <import file="${basedir}/core/module_graphhopper-core.xml"/>
+  
+  <import file="${basedir}/reader-osm/module_graphhopper-reader-osm.xml"/>
+  
+  <import file="${basedir}/isochrone/module_graphhopper-isochrone.xml"/>
+  
+  <import file="${basedir}/reader-gtfs/module_graphhopper-reader-gtfs.xml"/>
+  
+  <import file="${basedir}/tools/module_graphhopper-tools.xml"/>
+  
+  <import file="${basedir}/web-bundle/module_graphhopper-web-bundle.xml"/>
+  
+  <import file="${basedir}/web/module_graphhopper-web.xml"/>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.graphhopper-api, clean.module.graphhopper-parent, clean.module.graphhopper-web-api, clean.module.directions-api-client-hc, clean.module.graphhopper-core, clean.module.graphhopper-reader-osm, clean.module.graphhopper-isochrone, clean.module.graphhopper-reader-gtfs, clean.module.graphhopper-tools, clean.module.graphhopper-web-bundle, clean.module.graphhopper-web" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.graphhopper-api, compile.module.graphhopper-parent, compile.module.graphhopper-web-api, compile.module.directions-api-client-hc, compile.module.graphhopper-core, compile.module.graphhopper-reader-osm, compile.module.graphhopper-isochrone, compile.module.graphhopper-reader-gtfs, compile.module.graphhopper-tools, compile.module.graphhopper-web-bundle, compile.module.graphhopper-web" description="build all modules"/>
+  
+  <target name="init.artifacts">
+    <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.graphhopper-parent:jar" value="${basedir}/classes/artifacts/graphhopper_parent_jar"/>
+    <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.graphhopper-parent.jar" value="${artifacts.temp.dir}/graphhopper-parent.jar"/>
+  </target>
+  
+  <target name="artifact.graphhopper-parent:jar" depends="init.artifacts, compile.module.directions-api-client-hc, compile.module.graphhopper-web-api, compile.module.graphhopper-api, compile.module.graphhopper-isochrone, compile.module.graphhopper-reader-osm, compile.module.graphhopper-core, compile.module.graphhopper-reader-gtfs, compile.module.graphhopper-web, compile.module.graphhopper-web-bundle, compile.module.graphhopper-tools" description="Build &#39;graphhopper-parent:jar&#39; artifact">
+    <property name="artifact.temp.output.graphhopper-parent:jar" value="${artifacts.temp.dir}/graphhopper_parent_jar"/>
+    <mkdir dir="${artifact.temp.output.graphhopper-parent:jar}"/>
+    <jar destfile="${temp.jar.path.graphhopper-parent.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${directions-api-client-hc.output.dir}"/>
+      <zipfileset dir="${graphhopper-web-api.output.dir}"/>
+      <zipfileset dir="${graphhopper-api.output.dir}"/>
+      <zipfileset dir="${graphhopper-isochrone.output.dir}"/>
+      <zipfileset dir="${graphhopper-reader-osm.output.dir}"/>
+      <zipfileset dir="${graphhopper-core.output.dir}"/>
+      <zipfileset dir="${graphhopper-reader-gtfs.output.dir}"/>
+      <zipfileset dir="${graphhopper-web.output.dir}"/>
+      <zipfileset dir="${graphhopper-web-bundle.output.dir}"/>
+      <zipfileset dir="${graphhopper-tools.output.dir}"/>
+      <zipfileset src="${path.variable.maven_repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-configuration/1.3.5/dropwizard-configuration-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-util/1.3.5/dropwizard-util-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-jackson/1.3.5/dropwizard-jackson-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-core/1.3.5/dropwizard-core-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/javax/activation/activation/1.1.1/activation-1.1.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/hibernate/hibernate-validator/5.4.2.Final/hibernate-validator-5.4.2.Final.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-jersey/1.3.5/dropwizard-jersey-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/javax/ws/rs/javax.ws.rs-api/2.0.1/javax.ws.rs-api-2.0.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/jetty-util/9.4.11.v20180605/jetty-util-9.4.11.v20180605.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/jetty-io/9.4.11.v20180605/jetty-io-9.4.11.v20180605.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/jersey/core/jersey-common/2.25.1/jersey-common-2.25.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-metrics/1.3.5/dropwizard-metrics-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.9.6/jackson-datatype-jsr310-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/jetty-http/9.4.11.v20180605/jetty-http-9.4.11.v20180605.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/slf4j/jul-to-slf4j/1.7.25/jul-to-slf4j-1.7.25.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/javassist/javassist/3.22.0-GA/javassist-3.22.0-GA.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/papertrail/profiler/1.0.2/profiler-1.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/slf4j/jcl-over-slf4j/1.7.25/jcl-over-slf4j-1.7.25.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-jetty/1.3.5/dropwizard-jetty-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-core/2.9.6/jackson-core-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/google/errorprone/error_prone_annotations/2.1.3/error_prone_annotations-2.1.3.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-jvm/4.0.2/metrics-jvm-4.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/google/protobuf/protobuf-java/3.4.0/protobuf-java-3.4.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-jetty9/4.0.2/metrics-jetty9-4.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-logging/1.3.5/dropwizard-logging-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-json/4.0.2/metrics-json-4.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/javax.el/3.0.0/javax.el-3.0.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/checkerframework/checker-compat-qual/2.0.0/checker-compat-qual-2.0.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/net/sourceforge/javacsv/javacsv/2.0/javacsv-2.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/carrotsearch/hppc/0.8.1/hppc-0.8.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/classmate/1.3.1/classmate-1.3.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/ch/qos/logback/logback-access/1.2.3/logback-access-1.2.3.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/datatype/jackson-datatype-joda/2.9.6/jackson-datatype-joda-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-healthchecks/4.0.2/metrics-healthchecks-4.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/apache/commons/commons-lang3/3.7/commons-lang3-3.7.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-servlets/1.3.5/dropwizard-servlets-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/slf4j/slf4j-log4j12/1.7.25/slf4j-log4j12-1.7.25.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/hk2/hk2-locator/2.5.0-b32/hk2-locator-2.5.0-b32.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/objenesis/objenesis/2.6/objenesis-2.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/toolchain/setuid/jetty-setuid-java/1.0.3/jetty-setuid-java-1.0.3.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/jersey/containers/jersey-container-servlet/2.25.1/jersey-container-servlet-2.25.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/jersey/bundles/repackaged/jersey-guava/2.25.1/jersey-guava-2.25.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-logback/4.0.2/metrics-logback-4.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/graphhopper/external/jackson-datatype-jts/0.12-2.5-1/jackson-datatype-jts-0.12-2.5-1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/google/protobuf/protobuf-java/2.6.1/protobuf-java-2.6.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/yaml/snakeyaml/1.18/snakeyaml-1.18.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/jboss/logging/jboss-logging/3.3.0.Final/jboss-logging-3.3.0.Final.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/jetty-continuation/9.4.11.v20180605/jetty-continuation-9.4.11.v20180605.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/apache/commons/commons-compress/1.15/commons-compress-1.15.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/jersey/ext/jersey-metainf-services/2.25.1/jersey-metainf-services-2.25.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/mapdb/mapdb/1.0.8/mapdb-1.0.8.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.3/xmlgraphics-commons-2.3.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-jersey2/4.0.2/metrics-jersey2-4.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/module/jackson-module-afterburner/2.9.6/jackson-module-afterburner-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/javax/xml/soap/javax.xml.soap-api/1.4.0/javax.xml.soap-api-1.4.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/hk2/hk2-api/2.5.0-b32/hk2-api-2.5.0-b32.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/jetty-webapp/9.4.11.v20180605/jetty-webapp-9.4.11.v20180605.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/commons-io/commons-io/2.4/commons-io-2.4.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-lifecycle/1.3.5/dropwizard-lifecycle-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.9.6/jackson-dataformat-yaml-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.9.6/jackson-module-jaxb-annotations-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/apache/commons/commons-text/1.2/commons-text-1.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-validation/1.3.5/dropwizard-validation-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/jetty-security/9.4.11.v20180605/jetty-security-9.4.11.v20180605.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/hk2/external/aopalliance-repackaged/2.5.0-b32/aopalliance-repackaged-2.5.0-b32.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/google/transit/gtfs-realtime-bindings/0.0.4/gtfs-realtime-bindings-0.0.4.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/jaxrs/jackson-jaxrs-json-provider/2.9.6/jackson-jaxrs-json-provider-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/joda-time/joda-time/2.9.9/joda-time-2.9.9.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-databind/2.9.6/jackson-databind-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/openstreetmap/osmosis/osmosis-osm-binary/0.46/osmosis-osm-binary-0.46.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-jmx/4.0.2/metrics-jmx-4.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/jetty-servlets/9.4.11.v20180605/jetty-servlets-9.4.11.v20180605.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/datatype/jackson-datatype-guava/2.9.6/jackson-datatype-guava-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-annotation/4.0.2/metrics-annotation-4.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/locationtech/jts/jts-core/1.15.1/jts-core-1.15.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/net/sourceforge/argparse4j/argparse4j/0.8.1/argparse4j-0.8.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/slf4j/log4j-over-slf4j/1.7.25/log4j-over-slf4j-1.7.25.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/jetty-xml/9.4.11.v20180605/jetty-xml-9.4.11.v20180605.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/dropwizard-request-logging/1.3.5/dropwizard-request-logging-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/jetty-servlet/9.4.11.v20180605/jetty-servlet-9.4.11.v20180605.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/jersey/containers/jersey-container-servlet-core/2.25.1/jersey-container-servlet-core-2.25.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/google/guava/guava/24.0-jre/guava-24.0-jre.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/jersey/core/jersey-server/2.25.1/jersey-server-2.25.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/jaxrs/jackson-jaxrs-base/2.9.6/jackson-jaxrs-base-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard-bundles/dropwizard-configurable-assets-bundle/1.3.5/dropwizard-configurable-assets-bundle-1.3.5.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/jersey/ext/jersey-bean-validation/2.25.1/jersey-bean-validation-2.25.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-core/4.0.2/metrics-core-4.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/hk2/hk2-utils/2.5.0-b32/hk2-utils-2.5.0-b32.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/module/jackson-module-parameter-names/2.9.6/jackson-module-parameter-names-2.9.6.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/io/dropwizard/metrics/metrics-servlets/4.0.2/metrics-servlets-4.0.2.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/squareup/okio/okio/1.13.0/okio-1.13.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/eclipse/jetty/jetty-server/9.4.11.v20180605/jetty-server-9.4.11.v20180605.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/jersey/media/jersey-media-jaxb/2.25.1/jersey-media-jaxb-2.25.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/hk2/osgi-resource-locator/1.0.1/osgi-resource-locator-1.0.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/javax/xml/ws/jaxws-api/2.3.0/jaxws-api-2.3.0.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/jersey/core/jersey-client/2.25.1/jersey-client-2.25.1.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/org/glassfish/hk2/external/javax.inject/2.5.0-b32/javax.inject-2.5.0-b32.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar"/>
+      <zipfileset src="${path.variable.maven_repository}/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.6/jackson-datatype-jdk8-2.9.6.jar"/>
+    </jar>
+    <copy file="${temp.jar.path.graphhopper-parent.jar}" tofile="${artifact.temp.output.graphhopper-parent:jar}/graphhopper-parent.jar"/>
+  </target>
+  
+  <target name="build.all.artifacts" depends="artifact.graphhopper-parent:jar" description="Build all artifacts">
+    <mkdir dir="${artifact.output.graphhopper-parent:jar}"/>
+    <copy todir="${artifact.output.graphhopper-parent:jar}">
+      <fileset dir="${artifact.temp.output.graphhopper-parent:jar}"/>
+    </copy>
+    
+    <!-- Delete temporary files -->
+    <delete dir="${artifacts.temp.dir}"/>
+  </target>
+  
+  <target name="all" depends="build.modules, build.all.artifacts" description="build all"/>
+</project>

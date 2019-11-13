@@ -64,7 +64,7 @@ public class I18NResource {
             json.defaultTr = tr.asMap();
         }
         json.locale = locale;
-        json.en = map.get("en").asMap();
+        json.en = map.get("nl").asMap();
         return json;
     }
 
