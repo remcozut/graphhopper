@@ -17,7 +17,7 @@
  */
 package com.graphhopper.util.details;
 
-import com.graphhopper.routing.VirtualEdgeIteratorState;
+import com.graphhopper.routing.querygraph.VirtualEdgeIteratorState;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.GHUtility;
 
@@ -48,7 +48,7 @@ public class EdgeIdDetails extends AbstractPathDetailsBuilder {
 
     private int edgeId(EdgeIteratorState edge) {
         if (edge instanceof VirtualEdgeIteratorState) {
-            return GHUtility.getEdgeFromEdgeKey(((VirtualEdgeIteratorState) edge).getOriginalTraversalKey());
+            return GHUtility.getEdgeFromEdgeKey(((VirtualEdgeIteratorState) edge).getOriginalEdgeKey());
         } else {
             return edge.getEdge();
         }

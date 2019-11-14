@@ -27,12 +27,10 @@ import com.graphhopper.routing.ch.PreparationWeighting;
 import com.graphhopper.routing.ch.PrepareContractionHierarchies;
 import com.graphhopper.routing.profiles.BooleanEncodedValue;
 import com.graphhopper.routing.profiles.DecimalEncodedValue;
+import com.graphhopper.routing.querygraph.QueryGraph;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.weighting.Weighting;
-import com.graphhopper.storage.CHGraph;
-import com.graphhopper.storage.Graph;
-import com.graphhopper.storage.NodeAccess;
-import com.graphhopper.storage.SPTEntry;
+import com.graphhopper.storage.*;
 import com.graphhopper.storage.index.LocationIndexTree;
 import com.graphhopper.storage.index.QueryResult;
 import com.graphhopper.util.*;
@@ -99,9 +97,9 @@ public class MiniGraphUI {
         boolean ch = false;
         if (ch) {
             map.put(Parameters.Landmark.DISABLE, true);
-            weighting = hopper.getCHFactoryDecorator().getNodeBasedWeightings().get(0);
-            routingGraph = hopper.getGraphHopperStorage().getGraph(CHGraph.class, weighting);
-
+            CHProfile chProfile = hopper.getCHFactoryDecorator().getNodeBasedCHProfiles().get(0);
+            weighting = chProfile.getWeighting();
+            routingGraph = hopper.getGraphHopperStorage().getCHGraph(chProfile);
             final RoutingAlgorithmFactory tmpFactory = hopper.getAlgorithmFactory(map);
             algoFactory = new RoutingAlgorithmFactory() {
 
@@ -283,6 +281,27 @@ public class MiniGraphUI {
                         mg.plotEdge(g2, lat, lon, lat2, lon2, width);
                     }
                 }
+                index.query(graph.getBounds(), new LocationIndexTree.Visitor() {
+                    @Override
+                    public boolean isTileInfo() {
+                        return true;
+                    }
+
+                    @Override
+                    public void onTile(BBox bbox, int depth) {
+                        int width = Math.max(1, Math.min(4, 4 - depth));
+                        g2.setColor(Color.GRAY);
+                        mg.plotEdge(g2, bbox.minLat, bbox.minLon, bbox.minLat, bbox.maxLon, width);
+                        mg.plotEdge(g2, bbox.minLat, bbox.maxLon, bbox.maxLat, bbox.maxLon, width);
+                        mg.plotEdge(g2, bbox.maxLat, bbox.maxLon, bbox.maxLat, bbox.minLon, width);
+                        mg.plotEdge(g2, bbox.maxLat, bbox.minLon, bbox.minLat, bbox.minLon, width);
+                    }
+
+                    @Override
+                    public void onNode(int node) {
+                        // mg.plotNode(g2, node, Color.BLUE);
+                    }
+                });
 
                 g2.setColor(Color.WHITE);
                 g2.fillRect(0, 0, 1000, 20);
@@ -302,7 +321,7 @@ public class MiniGraphUI {
                     return;
 
                 makeTransparent(g2);
-                QueryGraph qGraph = new QueryGraph(routingGraph).lookup(fromRes, toRes);
+                QueryGraph qGraph = QueryGraph.lookup(routingGraph, fromRes, toRes);
                 RoutingAlgorithm algo = algoFactory.createAlgo(qGraph, algoOpts);
                 if (algo instanceof DebugAlgo) {
                     ((DebugAlgo) algo).setGraphics2D(g2);

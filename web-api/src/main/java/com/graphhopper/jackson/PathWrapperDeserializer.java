@@ -130,8 +130,8 @@ public class PathWrapperDeserializer extends JsonDeserializer<PathWrapper> {
                     } else if (sign == Instruction.FINISH) {
                         instr = new FinishInstruction(text, instPL, 0);
                     } else {
-                        instr = new Instruction(sign, text, ia, instPL);
-                        if (sign == Instruction.CONTINUE_ON_STREET) {
+                        instr = new Instruction(sign, TurnType.CONTINUE, text, ia, instPL);
+                        if (sign == Instruction.STRAIGHT) {
                             if (jsonObj.has("heading")) {
                                 instr.setExtraInfo("heading", jsonObj.get("heading").asDouble());
                             }

@@ -19,6 +19,8 @@ package com.graphhopper.routing;
 
 import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.ShortestWeighting;
+import com.graphhopper.routing.weighting.TurnWeighting;
+import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.SPTEntry;
@@ -31,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.graphhopper.util.GHUtility.updateDistancesFor;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -39,21 +42,22 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class AStarBidirectionTest extends AbstractRoutingAlgorithmTester {
     private final TraversalMode traversalMode;
+    private final boolean allowUTurns;
 
-    public AStarBidirectionTest(TraversalMode tMode) {
+    public AStarBidirectionTest(TraversalMode tMode, boolean allowUTurns) {
         this.traversalMode = tMode;
+        this.allowUTurns = allowUTurns;
     }
 
     /**
      * Runs the same test with each of the supported traversal modes
      */
-    @Parameters(name = "{0}")
+    @Parameters(name = "{0} {1}")
     public static Collection<Object[]> configs() {
         return Arrays.asList(new Object[][]{
-                {TraversalMode.NODE_BASED},
-                {TraversalMode.EDGE_BASED_1DIR},
-                {TraversalMode.EDGE_BASED_2DIR},
-                {TraversalMode.EDGE_BASED_2DIR_UTURN}
+                {TraversalMode.NODE_BASED, false},
+                {TraversalMode.EDGE_BASED, false},
+                {TraversalMode.EDGE_BASED, true}
         });
     }
 
@@ -62,7 +66,12 @@ public class AStarBidirectionTest extends AbstractRoutingAlgorithmTester {
         return new RoutingAlgorithmFactory() {
             @Override
             public RoutingAlgorithm createAlgo(Graph g, AlgorithmOptions opts) {
-                return new AStarBidirection(g, opts.getWeighting(), traversalMode);
+                Weighting w = opts.getWeighting();
+                if (traversalMode.isEdgeBased()) {
+                    double uTurnCost = allowUTurns ? 40 : Double.POSITIVE_INFINITY;
+                    w = new TurnWeighting(w, g.getTurnCostExtension(), uTurnCost);
+                }
+                return new AStarBidirection(g, w, traversalMode);
             }
         };
     }

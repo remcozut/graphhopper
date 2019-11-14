@@ -101,15 +101,15 @@ public class GpxFromInstructionsTest {
         assertEquals(5, points.size());
         assertEquals(1604120, p.getTime());
 
-        assertEquals(Instruction.CONTINUE_ON_STREET, wayList.get(0).getSign());
+        assertEquals(Instruction.STRAIGHT, wayList.get(0).getSign());
         assertEquals(15, wayList.get(0).getPoints().getLatitude(0), 1e-3);
         assertEquals(10, wayList.get(0).getPoints().getLongitude(0), 1e-3);
 
-        assertEquals(Instruction.TURN_LEFT, wayList.get(1).getSign());
+        assertEquals(Instruction.LEFT, wayList.get(1).getSign());
         assertEquals(15.1, wayList.get(1).getPoints().getLatitude(0), 1e-3);
         assertEquals(10, wayList.get(1).getPoints().getLongitude(0), 1e-3);
 
-        assertEquals(Instruction.TURN_RIGHT, wayList.get(2).getSign());
+        assertEquals(Instruction.RIGHT, wayList.get(2).getSign());
         assertEquals(15.1, wayList.get(2).getPoints().getLatitude(0), 1e-3);
         assertEquals(9.9, wayList.get(2).getPoints().getLongitude(0), 1e-3);
 
@@ -137,15 +137,16 @@ public class GpxFromInstructionsTest {
         PointList pl = new PointList();
         pl.add(49.942576, 11.580384);
         pl.add(49.941858, 11.582422);
-        instructions.add(new Instruction(Instruction.CONTINUE_ON_STREET, "temp", ea, pl).setDistance(240).setTime(15000));
+        instructions.add(new Instruction(Instruction.STRAIGHT, TurnType.TURN, "temp", ea, pl).setDistance(240).setTime(15000));
 
         pl = new PointList();
         pl.add(49.941575, 11.583501);
-        instructions.add(new Instruction(Instruction.TURN_LEFT, "temp2", ea, pl).setDistance(25).setTime(4000));
+        instructions.add(new Instruction(Instruction.LEFT, TurnType.TURN, "temp2", ea, pl).setDistance(25).setTime(4000));
 
         pl = new PointList();
         pl.add(49.941389, 11.584311);
-        instructions.add(new Instruction(Instruction.TURN_LEFT, "temp2", ea, pl).setDistance(25).setTime(3000));
+        instructions.add(new Instruction(Instruction.LEFT, TurnType.TURN, "temp2", ea, pl).setDistance(25).setTime(3000));
+
         instructions.add(new FinishInstruction(49.941029, 11.584514, 0));
 
         List<GPXEntry> result = GpxFromInstructions.createGPXList(instructions);
@@ -189,7 +190,7 @@ public class GpxFromInstructionsTest {
         PointList pl = new PointList();
         pl.add(0.000001, 0.000001);
         pl.add(-0.000123, -0.000125);
-        Instruction instruction = new Instruction(0, "do it", null, pl);
+        Instruction instruction = new Instruction(0, TurnType.CONTINUE, "do it", null, pl);
         instructions.add(instruction);
         instructions.add(new FinishInstruction(0.000852, 0.000852, 0));
 

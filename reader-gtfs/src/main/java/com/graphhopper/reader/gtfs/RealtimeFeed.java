@@ -27,14 +27,11 @@ import com.conveyal.gtfs.model.Frequency;
 import com.conveyal.gtfs.model.StopTime;
 import com.conveyal.gtfs.model.Trip;
 import com.google.transit.realtime.GtfsRealtime;
-import com.graphhopper.routing.VirtualEdgeIteratorState;
+import com.graphhopper.routing.querygraph.VirtualEdgeIteratorState;
 import com.graphhopper.routing.util.AllEdgesIterator;
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.routing.util.EncodingManager;
-import com.graphhopper.storage.Graph;
-import com.graphhopper.storage.GraphExtension;
-import com.graphhopper.storage.GraphHopperStorage;
-import com.graphhopper.storage.NodeAccess;
+import com.graphhopper.storage.*;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.PointList;
@@ -43,6 +40,9 @@ import org.mapdb.Fun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -93,7 +93,7 @@ public class RealtimeFeed {
         return new RealtimeFeed(staticGtfs, Collections.emptyMap(), new IntHashSet(), new IntLongHashMap(), new IntLongHashMap(), Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap(), staticGtfs.getOperatingDayPatterns(), staticGtfs.getWritableTimeZones());
     }
 
-    public static RealtimeFeed fromProtobuf(GraphHopperStorage graphHopperStorage, GtfsStorage staticGtfs, PtFlagEncoder encoder, Map<String, GtfsRealtime.FeedMessage> feedMessages) {
+    public static RealtimeFeed fromProtobuf(GraphHopperStorage graphHopperStorage, GtfsStorage staticGtfs, PtEncodedValues encoder, Map<String, GtfsRealtime.FeedMessage> feedMessages) {
         final IntHashSet blockedEdges = new IntHashSet();
         final IntLongHashMap delaysForBoardEdges = new IntLongHashMap();
         final IntLongHashMap delaysForAlightEdges = new IntLongHashMap();
@@ -102,16 +102,16 @@ public class RealtimeFeed {
             int firstEdge = graphHopperStorage.getAllEdges().length();
             EncodingManager encodingManager = graphHopperStorage.getEncodingManager();
             final NodeAccess nodeAccess = new NodeAccess() {
-                IntIntHashMap additionalNodeFields = new IntIntHashMap();
+                IntIntHashMap turnCostIndices = new IntIntHashMap();
 
                 @Override
-                public int getAdditionalNodeField(int nodeId) {
+                public int getTurnCostIndex(int nodeId) {
                     return 0;
                 }
 
                 @Override
-                public void setAdditionalNodeField(int nodeId, int additionalValue) {
-                    additionalNodeFields.put(nodeId, additionalValue);
+                public void setTurnCostIndex(int nodeId, int additionalValue) {
+                    turnCostIndices.put(nodeId, additionalValue);
                 }
 
                 @Override
@@ -252,12 +252,17 @@ public class RealtimeFeed {
             }
 
             @Override
-            public GraphExtension getExtension() {
+            public TurnCostExtension getTurnCostExtension() {
                 throw new RuntimeException();
             }
 
             @Override
             public int getOtherNode(int edge, int node) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public boolean isAdjacentToNode(int edge, int node) {
                 throw new UnsupportedOperationException();
             }
         };
@@ -287,6 +292,11 @@ public class RealtimeFeed {
                 @Override
                 public Map<GtfsStorage.FeedIdWithTimezone, Integer> getWritableTimeZones() {
                     return writableTimeZones;
+                }
+
+                @Override
+                public Map<Integer, GtfsStorage.FeedIdWithTimezone> getTimeZones() {
+                    return staticGtfs.getTimeZones();
                 }
 
                 @Override
@@ -331,7 +341,7 @@ public class RealtimeFeed {
                     return staticGtfs.getRoutes();
                 }
             };
-            final GtfsReader gtfsReader = new GtfsReader(feedKey, overlayGraph, gtfsStorage, encoder, null);
+            final GtfsReader gtfsReader = new GtfsReader(feedKey, overlayGraph, graphHopperStorage.getEncodingManager(), gtfsStorage, null);
             Instant timestamp = Instant.ofEpochSecond(feedMessage.getHeader().getTimestamp());
             LocalDate dateToChange = timestamp.atZone(timezone).toLocalDate(); //FIXME
             BitSet validOnDay = new BitSet();
@@ -415,17 +425,28 @@ public class RealtimeFeed {
     }
 
     public Optional<GtfsReader.TripWithStopTimes> getTripUpdate(GTFSFeed staticFeed, GtfsRealtime.TripDescriptor tripDescriptor, Label.Transition boardEdge, Instant boardTime) {
-        logger.trace("getTripUpdate {}", tripDescriptor);
-        if (!isThisRealtimeUpdateAboutThisLineRun(boardEdge.edge.edgeIteratorState, boardTime)) {
+        try {
+            logger.trace("getTripUpdate {}", tripDescriptor);
+            if (!isThisRealtimeUpdateAboutThisLineRun(boardEdge.edge.edgeIteratorState, boardTime)) {
+                return Optional.empty();
+            } else {
+                GtfsRealtime.TripDescriptor normalizedTripDescriptor = normalize(tripDescriptor);
+                return feedMessages.values().stream().flatMap(feedMessage -> feedMessage.getEntityList().stream()
+                        .filter(e -> e.hasTripUpdate())
+                        .map(e -> e.getTripUpdate())
+                        .filter(tu -> normalize(tu.getTrip()).equals(normalizedTripDescriptor))
+                        .map(tu -> toTripWithStopTimes(staticFeed, tu)))
+                        .findFirst();
+            }
+        } catch (RuntimeException e) {
+            feedMessages.forEach((name, feed) -> {
+                try (OutputStream s = new FileOutputStream(name+".gtfsdump")) {
+                    feed.writeTo(s);
+                } catch (IOException e1) {
+                    throw new RuntimeException();
+                }
+            });
             return Optional.empty();
-        } else {
-            GtfsRealtime.TripDescriptor normalizedTripDescriptor = normalize(tripDescriptor);
-            return feedMessages.values().stream().flatMap(feedMessage -> feedMessage.getEntityList().stream()
-                    .filter(e -> e.hasTripUpdate())
-                    .map(e -> e.getTripUpdate())
-                    .filter(tu -> normalize(tu.getTrip()).equals(normalizedTripDescriptor))
-                    .map(tu -> toTripWithStopTimes(staticFeed, tu)))
-                    .findFirst();
         }
     }
 
@@ -516,6 +537,9 @@ public class RealtimeFeed {
                 stopTimes.add(stopTime);
                 logger.trace("Number of stop times: {}", stopTimes.size());
             } else {
+                // http://localhost:3000/route?point=45.51043713898763%2C-122.68381118774415&point=45.522104713562825%2C-122.6455307006836&weighting=fastest&pt.earliest_departure_time=2018-08-24T16%3A56%3A17Z&arrive_by=false&pt.max_walk_distance_per_leg=1000&pt.limit_solutions=5&locale=en-US&vehicle=pt&elevation=false&use_miles=false&points_encoded=false&pt.profile=true
+                // long query:
+                // http://localhost:3000/route?point=45.518526513612244%2C-122.68612861633302&point=45.52908004573869%2C-122.6862144470215&weighting=fastest&pt.earliest_departure_time=2018-08-24T16%3A51%3A20Z&arrive_by=false&pt.max_walk_distance_per_leg=10000&pt.limit_solutions=4&locale=en-US&vehicle=pt&elevation=false&use_miles=false&points_encoded=false&pt.profile=true
                 throw new RuntimeException();
             }
         }

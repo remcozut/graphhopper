@@ -18,7 +18,6 @@
 package com.graphhopper.routing;
 
 import com.carrotsearch.hppc.IntArrayList;
-import com.graphhopper.routing.ch.NodeBasedNodeContractorTest;
 import com.graphhopper.routing.ch.PrepareContractionHierarchies;
 import com.graphhopper.routing.ch.PrepareEncoder;
 import com.graphhopper.routing.profiles.DecimalEncodedValue;
@@ -27,7 +26,6 @@ import com.graphhopper.routing.weighting.FastestWeighting;
 import com.graphhopper.routing.weighting.ShortestWeighting;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.*;
-import com.graphhopper.util.CHEdgeIteratorState;
 import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.GHUtility;
 import com.graphhopper.util.Parameters;
@@ -36,7 +34,6 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.graphhopper.routing.ch.NodeBasedNodeContractorTest.SC_ACCESS;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -48,22 +45,25 @@ import static org.junit.Assert.assertEquals;
 public class DijkstraBidirectionCHTest extends AbstractRoutingAlgorithmTester {
     @Override
     protected CHGraph getGraph(GraphHopperStorage ghStorage, Weighting weighting) {
-        return ghStorage.getGraph(CHGraph.class, weighting);
+        return ghStorage.getCHGraph(CHProfile.nodeBased(weighting));
     }
 
     @Override
     protected GraphHopperStorage createGHStorage(EncodingManager em,
                                                  List<? extends Weighting> weightings, boolean is3D) {
-        return new GraphHopperStorage(weightings, new RAMDirectory(), em, is3D, new GraphExtension.NoOpExtension()).
+        return new GraphHopperStorage(CHProfile.createProfilesForWeightings(weightings), new RAMDirectory(), em, is3D).
                 create(1000);
     }
 
     @Override
     public RoutingAlgorithmFactory createFactory(GraphHopperStorage ghStorage, AlgorithmOptions opts) {
         ghStorage.freeze();
-        PrepareContractionHierarchies ch = PrepareContractionHierarchies.fromGraphHopperStorage(
-                ghStorage, opts.getWeighting(), TraversalMode.NODE_BASED);
-        ch.doWork();
+        CHGraph chGraph = ghStorage.getCHGraph(CHProfile.nodeBased(opts.getWeighting()));
+        PrepareContractionHierarchies ch = new PrepareContractionHierarchies(chGraph);
+        // make sure the contraction runs only once
+        if (chGraph.getEdges() == chGraph.getBaseGraph().getEdges()) {
+            ch.doWork();
+        }
         return ch;
     }
 
@@ -73,46 +73,38 @@ public class DijkstraBidirectionCHTest extends AbstractRoutingAlgorithmTester {
         FlagEncoder encoder = new Bike2WeightFlagEncoder();
         EncodingManager em = EncodingManager.create(encoder);
         ShortestWeighting weighting = new ShortestWeighting(encoder);
-        GraphHopperStorage ghStorage = createGHStorage(em, Arrays.asList(weighting), false);
-        CHGraphImpl g2 = (CHGraphImpl) ghStorage.getGraph(CHGraph.class, weighting);
-        g2.edge(0, 1, 1, true);
-        EdgeIteratorState iter1_1 = g2.edge(0, 2, 1.4, false);
-        EdgeIteratorState iter1_2 = g2.edge(2, 5, 1.4, false);
-        g2.edge(1, 2, 1, true);
-        g2.edge(1, 3, 3, true);
-        g2.edge(2, 3, 1, true);
-        g2.edge(4, 3, 1, true);
-        g2.edge(2, 5, 1.4, true);
-        g2.edge(3, 5, 1, true);
-        g2.edge(5, 6, 1, true);
-        g2.edge(4, 6, 1, true);
-        g2.edge(6, 7, 1, true);
-        EdgeIteratorState iter2_2 = g2.edge(5, 7);
+        GraphHopperStorage g = createGHStorage(em, Arrays.asList(weighting), false);
+        g.edge(0, 1, 1, true);
+        EdgeIteratorState iter1_1 = g.edge(0, 2, 1.4, false);
+        EdgeIteratorState iter1_2 = g.edge(2, 5, 1.4, false);
+        g.edge(1, 2, 1, true);
+        g.edge(1, 3, 3, true);
+        g.edge(2, 3, 1, true);
+        g.edge(4, 3, 1, true);
+        g.edge(2, 5, 1.4, true);
+        g.edge(3, 5, 1, true);
+        g.edge(5, 6, 1, true);
+        g.edge(4, 6, 1, true);
+        g.edge(6, 7, 1, true);
+        EdgeIteratorState iter2_2 = g.edge(5, 7);
         iter2_2.setDistance(1.4).setFlags(GHUtility.setProperties(em.createEdgeFlags(), encoder, 10, true, false));
+        g.freeze();
 
-        ghStorage.freeze();
+        CHGraph lg = g.getCHGraph();
         // simulate preparation
-        CHEdgeIteratorState iter2_1 = g2.shortcut(0, 5);
-        iter2_1.setFlagsAndWeight(PrepareEncoder.getScFwdDir(), 1);
-        iter2_1.setDistance(2.8);
-        iter2_1.setSkippedEdges(iter1_1.getEdge(), iter1_2.getEdge());
-        CHEdgeIteratorState tmp = g2.shortcut(0, 7);
-        tmp.setFlagsAndWeight(PrepareEncoder.getScFwdDir(), 1);
-        tmp.setDistance(4.2);
-        tmp.setSkippedEdges(iter2_1.getEdge(), iter2_2.getEdge());
-        g2.setLevel(1, 0);
-        g2.setLevel(3, 1);
-        g2.setLevel(4, 2);
-        g2.setLevel(6, 3);
-        g2.setLevel(2, 4);
-        g2.setLevel(5, 5);
-        g2.setLevel(7, 6);
-        g2.setLevel(0, 7);
+        int sc2_1 = lg.shortcut(0, 5, PrepareEncoder.getScFwdDir(), 1, iter1_1.getEdge(), iter1_2.getEdge());
+        lg.shortcut(0, 7, PrepareEncoder.getScFwdDir(), 1, sc2_1, iter2_2.getEdge());
+        lg.setLevel(1, 0);
+        lg.setLevel(3, 1);
+        lg.setLevel(4, 2);
+        lg.setLevel(6, 3);
+        lg.setLevel(2, 4);
+        lg.setLevel(5, 5);
+        lg.setLevel(7, 6);
+        lg.setLevel(0, 7);
 
         AlgorithmOptions opts = new AlgorithmOptions(Parameters.Algorithms.DIJKSTRA_BI, weighting);
-        Path p = new PrepareContractionHierarchies(
-                g2, weighting, TraversalMode.NODE_BASED).
-                createAlgo(g2, opts).calcPath(0, 7);
+        Path p = new PrepareContractionHierarchies(lg).createAlgo(lg, opts).calcPath(0, 7);
 
         assertEquals(IntArrayList.from(0, 2, 5, 7), p.calcNodes());
         assertEquals(1064, p.getTime());
@@ -196,7 +188,7 @@ public class DijkstraBidirectionCHTest extends AbstractRoutingAlgorithmTester {
         }
         graph.edge(9, 0, 1, false);
         graph.edge(3, 9, 200, false);
-        CHGraph chGraph = graph.getGraph(CHGraph.class);
+        CHGraph chGraph = graph.getCHGraph();
 
         // explicitly set the node levels equal to the node ids
         // the graph contraction with this ordering yields no shortcuts
@@ -204,7 +196,7 @@ public class DijkstraBidirectionCHTest extends AbstractRoutingAlgorithmTester {
             chGraph.setLevel(i, i);
         }
         graph.freeze();
-        RoutingAlgorithm algo = createCHAlgo(graph, chGraph, true, defaultOpts);
+        RoutingAlgorithm algo = createCHAlgo(chGraph, true, defaultOpts);
         Path p = algo.calcPath(1, 0);
         // node 3 will be stalled and nodes 4-7 won't be explored --> we visit 7 nodes
         // note that node 9 will be visited by both forward and backward searches
@@ -213,7 +205,7 @@ public class DijkstraBidirectionCHTest extends AbstractRoutingAlgorithmTester {
         assertEquals(p.toString(), IntArrayList.from(1, 8, 9, 0), p.calcNodes());
 
         // without stalling we visit 11 nodes
-        RoutingAlgorithm algoNoSod = createCHAlgo(graph, chGraph, false, defaultOpts);
+        RoutingAlgorithm algoNoSod = createCHAlgo(chGraph, false, defaultOpts);
         Path pNoSod = algoNoSod.calcPath(1, 0);
         assertEquals(11, algoNoSod.getVisitedNodes());
         assertEquals(102, pNoSod.getDistance(), 1.e-3);
@@ -251,21 +243,20 @@ public class DijkstraBidirectionCHTest extends AbstractRoutingAlgorithmTester {
 
         graph.edge(1, 2, 1, true);
 
-        CHGraph chGraph = graph.getGraph(CHGraph.class);
+        CHGraph chGraph = graph.getCHGraph();
         for (int i = 0; i < 3; ++i) {
             chGraph.setLevel(i, i);
         }
         graph.freeze();
 
-        RoutingAlgorithm algo = createCHAlgo(graph, chGraph, true, algoOpts);
+        RoutingAlgorithm algo = createCHAlgo(chGraph, true, algoOpts);
         Path p = algo.calcPath(from, to);
         assertEquals(3, p.getDistance(), 1.e-3);
         assertEquals(p.toString(), expectedPath, p.calcNodes());
     }
 
-    private RoutingAlgorithm createCHAlgo(GraphHopperStorage graph, CHGraph chGraph, boolean withSOD, AlgorithmOptions algorithmOptions) {
-        PrepareContractionHierarchies ch = new PrepareContractionHierarchies(
-                chGraph, algorithmOptions.getWeighting(), TraversalMode.NODE_BASED);
+    private RoutingAlgorithm createCHAlgo(CHGraph chGraph, boolean withSOD, AlgorithmOptions algorithmOptions) {
+        PrepareContractionHierarchies ch = new PrepareContractionHierarchies(chGraph);
         if (!withSOD) {
             algorithmOptions.getHints().put("stall_on_demand", false);
         }

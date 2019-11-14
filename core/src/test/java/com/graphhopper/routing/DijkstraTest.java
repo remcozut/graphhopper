@@ -18,6 +18,8 @@
 package com.graphhopper.routing;
 
 import com.graphhopper.routing.util.TraversalMode;
+import com.graphhopper.routing.weighting.TurnWeighting;
+import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import org.junit.runner.RunWith;
@@ -33,9 +35,11 @@ import java.util.Collection;
 @RunWith(Parameterized.class)
 public class DijkstraTest extends AbstractRoutingAlgorithmTester {
     private final TraversalMode traversalMode;
+    private final boolean allowUTurns;
 
-    public DijkstraTest(TraversalMode tMode) {
+    public DijkstraTest(TraversalMode tMode, boolean allowUTurns) {
         this.traversalMode = tMode;
+        this.allowUTurns = allowUTurns;
     }
 
     /**
@@ -44,10 +48,9 @@ public class DijkstraTest extends AbstractRoutingAlgorithmTester {
     @Parameters(name = "{0}")
     public static Collection<Object[]> configs() {
         return Arrays.asList(new Object[][]{
-                {TraversalMode.NODE_BASED},
-                {TraversalMode.EDGE_BASED_1DIR},
-                {TraversalMode.EDGE_BASED_2DIR},
-                {TraversalMode.EDGE_BASED_2DIR_UTURN}
+                {TraversalMode.NODE_BASED, false},
+                {TraversalMode.EDGE_BASED, false},
+                {TraversalMode.EDGE_BASED, true}
         });
     }
 
@@ -56,7 +59,12 @@ public class DijkstraTest extends AbstractRoutingAlgorithmTester {
         return new RoutingAlgorithmFactory() {
             @Override
             public RoutingAlgorithm createAlgo(Graph g, AlgorithmOptions opts) {
-                return new Dijkstra(g, opts.getWeighting(), traversalMode);
+                Weighting w = opts.getWeighting();
+                if (traversalMode.isEdgeBased()) {
+                    double uTurnCost = allowUTurns ? 40 : Double.POSITIVE_INFINITY;
+                    w = new TurnWeighting(w, g.getTurnCostExtension(), uTurnCost);
+                }
+                return new Dijkstra(g, w, traversalMode);
             }
         };
     }

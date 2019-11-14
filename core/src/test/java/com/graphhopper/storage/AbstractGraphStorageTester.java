@@ -28,11 +28,12 @@ import org.junit.Test;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static com.graphhopper.routing.util.EncodingManager.getKey;
 import static com.graphhopper.util.GHUtility.count;
 import static org.junit.Assert.*;
 
@@ -100,7 +101,7 @@ public abstract class AbstractGraphStorageTester {
     abstract GraphHopperStorage createGHStorage(String location, boolean is3D);
 
     protected final GraphHopperStorage newRAMGHStorage() {
-        return new GraphHopperStorage(new RAMDirectory(), encodingManager, false, new GraphExtension.NoOpExtension());
+        return new GraphHopperStorage(new RAMDirectory(), encodingManager, false);
     }
 
     @Before
@@ -118,7 +119,7 @@ public abstract class AbstractGraphStorageTester {
     public void testSetTooBigDistance_435() {
         graph = createGHStorage();
 
-        double maxDist = EdgeAccess.MAX_DIST;
+        double maxDist = BaseGraph.MAX_DIST;
         EdgeIteratorState edge1 = graph.edge(0, 1, maxDist, true);
         assertEquals(maxDist, edge1.getDistance(), 1);
 
@@ -318,24 +319,14 @@ public abstract class AbstractGraphStorageTester {
         GraphHopperStorage gs = newRAMGHStorage();
         gs.setSegmentSize(8000);
         gs.create(10);
-        try {
-            graph.copyTo(gs);
-            checkExampleGraph(gs);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            assertTrue(ex.toString(), false);
-        }
+        graph.copyTo(gs);
+        checkExampleGraph(gs);
 
-        try {
-            Helper.close((Closeable) graph);
-            graph = createGHStorage();
-            gs.copyTo(graph);
-            checkExampleGraph(graph);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            assertTrue(ex.toString(), false);
-        }
-        Helper.close((Closeable) graph);
+        Helper.close(graph);
+        graph = createGHStorage();
+        gs.copyTo(graph);
+        checkExampleGraph(graph);
+        Helper.close(graph);
     }
 
     @Test
@@ -533,12 +524,12 @@ public abstract class AbstractGraphStorageTester {
         // no deletion happend
         assertEquals(fillToSize, graph.getNodes());
 
-        assertEquals(Arrays.<String>asList(), GHUtility.getProblems(graph));
+        assertEquals(Collections.<String>emptyList(), GHUtility.getProblems(graph));
 
         // now actually perform deletion
         graph.optimize();
 
-        assertEquals(Arrays.<String>asList(), GHUtility.getProblems(graph));
+        assertEquals(Collections.<String>emptyList(), GHUtility.getProblems(graph));
 
         assertEquals(fillToSize - deleted, graph.getNodes());
         int id1 = getIdOf(graph, 38.33f);
@@ -578,17 +569,17 @@ public abstract class AbstractGraphStorageTester {
         graph.markNodeRemoved(3);
 
         assertEquals(6, graph.getNodes());
-        assertEquals(Arrays.<String>asList(), GHUtility.getProblems(graph));
+        assertEquals(Collections.<String>emptyList(), GHUtility.getProblems(graph));
 
         // now actually perform deletion
         graph.optimize();
 
         assertEquals(4, graph.getNodes());
-        assertEquals(Arrays.<String>asList(), GHUtility.getProblems(graph));
+        assertEquals(Collections.<String>emptyList(), GHUtility.getProblems(graph));
         // shouldn't change anything
         graph.optimize();
         assertEquals(4, graph.getNodes());
-        assertEquals(Arrays.<String>asList(), GHUtility.getProblems(graph));
+        assertEquals(Collections.<String>emptyList(), GHUtility.getProblems(graph));
     }
 
     @Test
@@ -614,13 +605,13 @@ public abstract class AbstractGraphStorageTester {
         graph.edge(9, 12, 912, true).setWayGeometry(pl);
 
         assertEquals(13, graph.getNodes());
-        assertEquals(Arrays.<String>asList(), GHUtility.getProblems(graph));
+        assertEquals(Collections.<String>emptyList(), GHUtility.getProblems(graph));
 
         // perform deletion
         graph.optimize();
 
         assertEquals(11, graph.getNodes());
-        assertEquals(Arrays.<String>asList(), GHUtility.getProblems(graph));
+        assertEquals(Collections.<String>emptyList(), GHUtility.getProblems(graph));
 
         int id11 = getIdOf(graph, 11); // is now 10
         int id12 = getIdOf(graph, 12); // is now 5
@@ -719,7 +710,7 @@ public abstract class AbstractGraphStorageTester {
 
         try {
             graph.edge(0, 1).setDistance(-1);
-            assertTrue(false);
+            fail();
         } catch (IllegalArgumentException ex) {
         }
     }
@@ -746,11 +737,11 @@ public abstract class AbstractGraphStorageTester {
         assertEquals(20, iter.getDistance(), 1e-5);
 
         iter = graph.getEdgeIteratorState(edgeId, Integer.MIN_VALUE);
-        assertFalse(iter == null);
+        assertNotNull(iter);
         assertEquals(0, iter.getBaseNode());
         assertEquals(2, iter.getAdjNode());
         iter = graph.getEdgeIteratorState(edgeId, 1);
-        assertTrue(iter == null);
+        assertNull(iter);
 
         // delete
         graph.markNodeRemoved(1);
@@ -759,7 +750,7 @@ public abstract class AbstractGraphStorageTester {
         // throw exception if accessing deleted edge
         try {
             graph.getEdgeIteratorState(iter1.getEdge(), -1);
-            assertTrue(false);
+            fail();
         } catch (Exception ex) {
         }
     }
@@ -778,12 +769,12 @@ public abstract class AbstractGraphStorageTester {
         // raise exception
         try {
             graph.getEdgeIteratorState(4, 3);
-            assertTrue(false);
+            fail();
         } catch (Exception ex) {
         }
         try {
             graph.getEdgeIteratorState(-1, 3);
-            assertTrue(false);
+            fail();
         } catch (Exception ex) {
         }
 
@@ -985,8 +976,8 @@ public abstract class AbstractGraphStorageTester {
             }
         });
         list.add(new TmpCarFlagEncoder(29, 0.001, 0));
-        EncodingManager manager = EncodingManager.create(list, 8);
-        graph = new GraphHopperStorage(dir, manager, false, new GraphExtension.NoOpExtension()).create(defaultSize);
+        EncodingManager manager = EncodingManager.create(list);
+        graph = new GraphHopperStorage(dir, manager, false).create(defaultSize);
 
         EdgeIteratorState edge = graph.edge(0, 1);
         IntsRef intsRef = manager.createEdgeFlags();
@@ -996,12 +987,12 @@ public abstract class AbstractGraphStorageTester {
         assertEquals(Integer.MAX_VALUE / 3, edge.getFlags().ints[0]);
         graph.close();
 
-        graph = new GraphHopperStorage(dir, manager, false, new GraphExtension.NoOpExtension()).create(defaultSize);
+        graph = new GraphHopperStorage(dir, manager, false).create(defaultSize);
 
-        DecimalEncodedValue avSpeed0Enc = manager.getDecimalEncodedValue("car0.average_speed");
-        BooleanEncodedValue access0Enc = manager.getBooleanEncodedValue("car0.access");
-        DecimalEncodedValue avSpeed1Enc = manager.getDecimalEncodedValue("car.average_speed");
-        BooleanEncodedValue access1Enc = manager.getBooleanEncodedValue("car.access");
+        DecimalEncodedValue avSpeed0Enc = manager.getDecimalEncodedValue(getKey("car0", "average_speed"));
+        BooleanEncodedValue access0Enc = manager.getBooleanEncodedValue(getKey("car0", "access"));
+        DecimalEncodedValue avSpeed1Enc = manager.getDecimalEncodedValue(getKey("car", "average_speed"));
+        BooleanEncodedValue access1Enc = manager.getBooleanEncodedValue(getKey("car", "access"));
 
         edge = graph.edge(0, 1);
         GHUtility.setProperties(edge, list.get(0), 99.123, true, true);
@@ -1028,14 +1019,14 @@ public abstract class AbstractGraphStorageTester {
             }
         });
         list.add(new TmpCarFlagEncoder(29, 0.001, 0));
-        list.add(new TmpCarFlagEncoder(30, 0.001, 0){
+        list.add(new TmpCarFlagEncoder(30, 0.001, 0) {
             @Override
             public String toString() {
                 return "car2";
             }
         });
-        manager = EncodingManager.create(list, 20);
-        graph = new GraphHopperStorage(new RAMDirectory(), manager, false, new GraphExtension.NoOpExtension()).create(defaultSize);
+        manager = EncodingManager.create(list);
+        graph = new GraphHopperStorage(new RAMDirectory(), manager, false).create(defaultSize);
         edgeIter = graph.edge(0, 1).set(access0Enc, true).setReverse(access0Enc, false);
         assertTrue(edgeIter.get(access0Enc));
         assertFalse(edgeIter.getReverse(access0Enc));
@@ -1058,7 +1049,7 @@ public abstract class AbstractGraphStorageTester {
     }
 
     @Test
-    public void testDontGrowOnUpdate() throws IOException {
+    public void testDontGrowOnUpdate() {
         graph = createGHStorage(defaultGraphLoc, true);
         NodeAccess na = graph.getNodeAccess();
         assertTrue(na.is3D());
@@ -1096,7 +1087,7 @@ public abstract class AbstractGraphStorageTester {
         try {
             // currently not possible to detach without next, without introducing a new property inside EdgeIterable
             iter.detach(false);
-            assertTrue(false);
+            fail();
         } catch (Exception ex) {
         }
 

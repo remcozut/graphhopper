@@ -22,15 +22,14 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphhopper.GHResponse;
 import com.graphhopper.PathWrapper;
-import com.graphhopper.json.geo.JsonFeature;
 import com.graphhopper.util.Helper;
 import com.graphhopper.util.PointList;
-import com.graphhopper.util.shapes.GHPoint3D;
-import org.locationtech.jts.geom.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -108,21 +107,6 @@ public class WebHelper {
         return encodePolyline(poly, includeElevation, 1e5);
     }
 
-    public static String encodePolylineAsGeoJson(PointList poly, boolean includeElevation, double precision) {
-
-        GeometryFactory geometryFactory = new GeometryFactory();
-
-        Coordinate[] coordinates = new Coordinate[poly.getSize()];
-
-
-        LineString lineString = geometryFactory.createLineString();
-
-
-
-
-        return ";";
-    }
-
     public static String encodePolyline(PointList poly, boolean includeElevation, double precision) {
         StringBuilder sb = new StringBuilder();
         int size = poly.getSize();
@@ -159,17 +143,24 @@ public class WebHelper {
         sb.append((char) (num));
     }
 
+    /**
+     * This includes the required attribution for OpenStreetMap.
+     * Do not hesitate to you mention us and link us in your about page
+     * https://support.graphhopper.com/support/search/solutions?term=attribution
+     */
+    public static final List<String> COPYRIGHTS = Arrays.asList("GraphHopper", "OpenStreetMap contributors");
+
+    public static ObjectNode jsonResponsePutInfo(ObjectNode json, float took) {
+        final ObjectNode info = json.putObject("info");
+        info.putPOJO("copyrights", COPYRIGHTS);
+        info.put("took", Math.round(took * 1000));
+        return json;
+    }
 
     public static ObjectNode jsonObject(GHResponse ghRsp, boolean enableInstructions, boolean calcPoints, boolean enableElevation, boolean pointsEncoded, float took) {
         ObjectNode json = JsonNodeFactory.instance.objectNode();
         json.putPOJO("hints", ghRsp.getHints().toMap());
-        // If you replace GraphHopper with your own brand name, this is fine.
-        // Still it would be highly appreciated if you mention us in your about page!
-        final ObjectNode info = json.putObject("info");
-        info.putArray("copyrights")
-                .add("GraphHopper")
-                .add("OpenStreetMap contributors");
-        info.put("took", Math.round(took * 1000));
+        jsonResponsePutInfo(json, took);
         ArrayNode jsonPathList = json.putArray("paths");
         for (PathWrapper ar : ghRsp.getAll()) {
             ObjectNode jsonPath = jsonPathList.addObject();
@@ -202,16 +193,4 @@ public class WebHelper {
         return json;
     }
 
-
-    public static String convertPointListToString(PointList pointList) {
-        String retVal = "";
-
-        for (GHPoint3D point3D : pointList) {
-           retVal += point3D.toGeoJson();
-        }
-
-        return  pointList.toLineString(false).toText();
-
-
-    }
 }

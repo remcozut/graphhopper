@@ -27,7 +27,10 @@ public interface EncodedValueLookup {
 
     DecimalEncodedValue getDecimalEncodedValue(String key);
 
+    <T extends Enum> EnumEncodedValue<T> getEnumEncodedValue(String key, Class<T> enumType);
+
     ObjectEncodedValue getObjectEncodedValue(String key);
 
-    boolean hasEncoder(String key);
+
+    boolean hasEncodedValue(String key);
 }

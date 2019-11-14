@@ -323,7 +323,7 @@ public class Instruction {
      * Return the direction like 'NE' based on the first tracksegment of the instruction. If
      * Instruction does not contain enough coordinate points, an empty string will be returned.
      */
-    String calcDirection(Instruction nextI) {
+    public String calcDirection(Instruction nextI) {
         double azimuth = calcAzimuth(nextI);
         if (Double.isNaN(azimuth))
             return "";

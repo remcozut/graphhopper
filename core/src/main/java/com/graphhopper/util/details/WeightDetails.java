@@ -21,7 +21,7 @@ import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
 
-import static com.graphhopper.util.Parameters.Details.WEIGHT;
+import static com.graphhopper.util.Parameters.DETAILS.WEIGHT;
 
 /**
  * Calculate the weight segments for a Path

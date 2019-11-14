@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static com.graphhopper.routing.util.EncodingManager.getKey;
 import static com.graphhopper.routing.util.PriorityCode.*;
 
 /**
@@ -73,7 +74,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
     private String classBicycleKey;
 
     protected BikeCommonFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts) {
-        super(speedBits, speedFactor, maxTurnCosts, 8);
+        super(speedBits, speedFactor, maxTurnCosts);
 
         addPushingSection("path");
         addPushingSection("footway");
@@ -91,6 +92,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
         intendedValues.add("yes");
         intendedValues.add("designated");
         intendedValues.add("official");
+        intendedValues.add("permissive");
 
         cyclewayTags.add("cycleway");
         cyclewayTags.add("cycleway:right");
@@ -241,11 +243,10 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
     public void createEncodedValues(List<EncodedValue> registerNewEncodedValue, String prefix, int index) {
         // first two bits are reserved for route handling in superclass
         super.createEncodedValues(registerNewEncodedValue, prefix, index);
-        registerNewEncodedValue.add(speedEncoder = new FactorizedDecimalEncodedValue(prefix + "average_speed", speedBits, speedFactor, speedTwoDirections));
-        registerNewEncodedValue.add(unpavedEncoder = new SimpleBooleanEncodedValue(prefix + "paved", false));
-        registerNewEncodedValue.add(wayTypeEncoder = new SimpleIntEncodedValue(prefix + "waytype", 3, false));
-        registerNewEncodedValue.add(priorityWayEncoder = new FactorizedDecimalEncodedValue(prefix + "priority", 3, PriorityCode.getFactor(1), false));
-    }
+        registerNewEncodedValue.add(avgSpeedEnc = new UnsignedDecimalEncodedValue(getKey(prefix, "average_speed"), speedBits, speedFactor, speedTwoDirections));
+        registerNewEncodedValue.add(unpavedEncoder = new SimpleBooleanEncodedValue(getKey(prefix, "paved"), false));
+        registerNewEncodedValue.add(wayTypeEncoder = new UnsignedIntEncodedValue(getKey(prefix, "waytype"), 3, false));
+        registerNewEncodedValue.add(priorityWayEncoder = new UnsignedDecimalEncodedValue(getKey(prefix, "priority"), 3, PriorityCode.getFactor(1), false));    }
 
     @Override
     public int defineRelationBits(int index, int shift) {
@@ -692,7 +693,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
     }
 
     protected void handleSpeed(IntsRef edgeFlags, ReaderWay way, double speed) {
-        speedEncoder.setDecimal(false, edgeFlags, speed);
+        avgSpeedEnc.setDecimal(false, edgeFlags, speed);
 
         // handle oneways        
         boolean isOneway = way.hasTag("oneway", oneways)

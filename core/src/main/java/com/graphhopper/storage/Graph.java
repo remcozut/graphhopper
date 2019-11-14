@@ -88,6 +88,11 @@ public interface Graph {
     int getOtherNode(int edge, int node);
 
     /**
+     * @return true if the edge with id edge is adjacent to node, false otherwise
+     */
+    boolean isAdjacentToNode(int edge, int node);
+
+    /**
      * @return all edges in this graph, where baseNode will be the smaller node.
      */
     AllEdgesIterator getAllEdges();
@@ -116,8 +121,8 @@ public interface Graph {
     Graph copyTo(Graph g);
 
     /**
-     * @return the graph extension like a TurnCostExtension
+     * @return the {@link TurnCostExtension} or null if not supported
      */
-    GraphExtension getExtension();
+    TurnCostExtension getTurnCostExtension();
 
 }

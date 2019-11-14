@@ -17,10 +17,7 @@
  */
 package com.graphhopper.routing.util;
 
-import com.graphhopper.reader.ConditionalTagInspector;
-import com.graphhopper.reader.ReaderNode;
-import com.graphhopper.reader.ReaderRelation;
-import com.graphhopper.reader.ReaderWay;
+import com.graphhopper.reader.*;
 import com.graphhopper.reader.osm.conditional.ConditionalOSMTagInspector;
 import com.graphhopper.reader.osm.conditional.DateRangeParser;
 import com.graphhopper.routing.profiles.*;
@@ -59,7 +56,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     private long encoderBit;
     protected BooleanEncodedValue accessEnc;
     protected BooleanEncodedValue roundaboutEnc;
-    protected DecimalEncodedValue speedEncoder;
+    protected DecimalEncodedValue avgSpeedEnc;
     protected IntEncodedValue wayTypeEncoder;
 
 
@@ -90,7 +87,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     protected static final double LONG_TRIP_FERRY_SPEED = 30;
 
 
-    protected int maxUturnDistance = 35;
+
 
     private ConditionalTagInspector conditionalTagInspector;
 
@@ -109,8 +106,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
      * @param maxTurnCosts specify the maximum value used for turn costs, if this value is reached a
      *                     turn is forbidden and results in costs of positive infinity.
      */
-    protected AbstractFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts, int maxUturnDistance) {
-        this.maxUturnDistance = maxUturnDistance;
+    protected AbstractFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts) {
         this.maxTurnCosts = maxTurnCosts <= 0 ? 0 : maxTurnCosts;
         this.speedBits = speedBits;
         this.speedFactor = speedFactor;
@@ -184,7 +180,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     public void createEncodedValues(List<EncodedValue> registerNewEncodedValue, String prefix, int index) {
         // define the first 2 speedBits in flags for routing
         registerNewEncodedValue.add(accessEnc = new SimpleBooleanEncodedValue(prefix + "access", true));
-        registerNewEncodedValue.add(nodeReferenceEnc = new SimpleIntEncodedValue(prefix + "ref", 32));
+        registerNewEncodedValue.add(nodeReferenceEnc = new UnsignedIntEncodedValue(prefix + "ref", 31, false));
         roundaboutEnc = getBooleanEncodedValue(EncodingManager.ROUNDABOUT);
         encoderBit = 1L << index;
     }
@@ -196,6 +192,10 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
      */
     public int defineRelationBits(int index, int shift) {
         return shift;
+    }
+
+    public boolean acceptsTurnRelation(OSMTurnRelation relation) {
+        return true;
     }
 
     /**
@@ -304,9 +304,9 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
      */
     protected void flagsDefault(IntsRef edgeFlags, boolean forward, boolean backward) {
         if (forward)
-            speedEncoder.setDecimal(false, edgeFlags, speedDefault);
+            avgSpeedEnc.setDecimal(false, edgeFlags, speedDefault);
         if (backward)
-            speedEncoder.setDecimal(true, edgeFlags, speedDefault);
+            avgSpeedEnc.setDecimal(true, edgeFlags, speedDefault);
         accessEnc.setBool(false, edgeFlags, forward);
         accessEnc.setBool(true, edgeFlags, backward);
 
@@ -333,6 +333,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
             maxSpeed = backSpeed;
 
         return maxSpeed;
+
     }
 
     @Override
@@ -363,7 +364,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
 
         // on some German autobahns and a very few other places
         if ("none".equals(str))
-            return 140;
+            return MaxSpeed.UNLIMITED_SIGN_SPEED;
 
         if (str.endsWith(":rural") || str.endsWith(":trunk"))
             return 80;
@@ -415,9 +416,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     }
 
 
-    public int getMaxUturnDistance() {
-        return maxUturnDistance;
-    }
+
 
     /**
      * Special handling for ferry ways.
@@ -580,9 +579,9 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     }
 
     public final DecimalEncodedValue getAverageSpeedEnc() {
-        if (speedEncoder == null)
+        if (avgSpeedEnc == null)
             throw new NullPointerException("FlagEncoder " + toString() + " not yet initialized");
-        return speedEncoder;
+        return avgSpeedEnc;
     }
 
     public final BooleanEncodedValue getAccessEnc() {
@@ -608,7 +607,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
             throw new IllegalArgumentException("Speed cannot be negative or NaN: " + speed + ", flags:" + BitUtil.LITTLE.toBitString(edgeFlags));
 
         if (speed < speedFactor / 2) {
-            speedEncoder.setDecimal(reverse, edgeFlags, 0);
+            avgSpeedEnc.setDecimal(reverse, edgeFlags, 0);
             accessEnc.setBool(reverse, edgeFlags, false);
             return;
         }
@@ -616,7 +615,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
         if (speed > getMaxSpeed())
             speed = getMaxSpeed();
 
-        speedEncoder.setDecimal(reverse, edgeFlags, speed);
+        avgSpeedEnc.setDecimal(reverse, edgeFlags, speed);
     }
 
     double getSpeed(IntsRef edgeFlags) {
@@ -624,7 +623,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     }
 
     double getSpeed(boolean reverse, IntsRef edgeFlags) {
-        double speedVal = speedEncoder.getDecimal(reverse, edgeFlags);
+        double speedVal = avgSpeedEnc.getDecimal(reverse, edgeFlags);
         if (speedVal < 0)
             throw new IllegalStateException("Speed was negative!? " + speedVal);
 
@@ -671,6 +670,12 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
         return encodedValueLookup.getDecimalEncodedValue(key);
     }
 
+
+    @Override
+    public <T extends Enum> EnumEncodedValue<T> getEnumEncodedValue(String key, Class<T> enumType) {
+        return encodedValueLookup.getEnumEncodedValue(key, enumType);
+    }
+
     @Override
     public ObjectEncodedValue getObjectEncodedValue(String key) {
         return encodedValueLookup.getObjectEncodedValue(key);
@@ -689,7 +694,7 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     }
 
     @Override
-    public boolean hasEncoder(String key) {
-        return encodedValueLookup.hasEncoder(key);
+    public boolean hasEncodedValue(String key) {
+        return encodedValueLookup.hasEncodedValue(key);
     }
 }

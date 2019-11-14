@@ -79,7 +79,7 @@ public class PrepareRoutingSubnetworks {
         int unvisitedDeadEnds = 0;
         for (FlagEncoder encoder : encoders) {
             // mark edges for one vehicle as inaccessible
-            PrepEdgeFilter filter = new PrepEdgeFilter(encoder);
+            DefaultEdgeFilter filter = DefaultEdgeFilter.allEdges(encoder);
             if (minOneWayNetworkSize > 0)
                 unvisitedDeadEnds += removeDeadEndUnvisitedNetworks(filter);
 
@@ -104,7 +104,7 @@ public class PrepareRoutingSubnetworks {
     /**
      * This method finds the double linked components according to the specified filter.
      */
-    List<IntArrayList> findSubnetworks(PrepEdgeFilter filter) {
+    List<IntArrayList> findSubnetworks(DefaultEdgeFilter filter) {
         final BooleanEncodedValue accessEnc = filter.getAccessEnc();
         final EdgeExplorer explorer = ghStorage.createEdgeExplorer(filter);
         int locs = ghStorage.getNodes();
@@ -152,7 +152,7 @@ public class PrepareRoutingSubnetworks {
     /**
      * Deletes all but the largest subnetworks.
      */
-    int keepLargeNetworks(PrepEdgeFilter filter, List<IntArrayList> components) {
+    int keepLargeNetworks(DefaultEdgeFilter filter, List<IntArrayList> components) {
         if (components.size() <= 1)
             return 0;
 
@@ -195,11 +195,11 @@ public class PrepareRoutingSubnetworks {
      *
      * @return number of removed edges
      */
-    int removeDeadEndUnvisitedNetworks(final PrepEdgeFilter bothFilter) {
+    int removeDeadEndUnvisitedNetworks(final DefaultEdgeFilter bothFilter) {
         StopWatch sw = new StopWatch(bothFilter.getAccessEnc() + " findComponents").start();
         final EdgeFilter outFilter = DefaultEdgeFilter.outEdges(bothFilter.getAccessEnc());
 
-        // partition graph into strongly connected components using Tarjan's algorithm        
+        // partition graph into strongly connected components using Tarjan's algorithm
         TarjansSCCAlgorithm tarjan = new TarjansSCCAlgorithm(ghStorage, outFilter, true);
         List<IntArrayList> components = tarjan.findComponents();
         logger.info(sw.stop() + ", size:" + components.size());
@@ -213,7 +213,7 @@ public class PrepareRoutingSubnetworks {
      *
      * @return number of removed edges
      */
-    int removeEdges(final PrepEdgeFilter bothFilter, List<IntArrayList> components, int min) {
+    int removeEdges(final DefaultEdgeFilter bothFilter, List<IntArrayList> components, int min) {
         // remove edges determined from nodes but only if less than minimum size
         EdgeExplorer explorer = ghStorage.createEdgeExplorer(bothFilter);
         int removedEdges = 0;
@@ -255,7 +255,7 @@ public class PrepareRoutingSubnetworks {
      * @return true if no edges are reachable from the specified nodeIndex for any flag encoder.
      */
     boolean detectNodeRemovedForAllEncoders(EdgeExplorer edgeExplorerAllEdges, int nodeIndex) {
-        // we could implement a 'fast check' for several previously marked removed nodes via GHBitSet 
+        // we could implement a 'fast check' for several previously marked removed nodes via GHBitSet
         // removedNodesPerVehicle. The problem is that we would need long-indices but BitSet only supports int (due to nodeIndex*numberOfEncoders)
 
         // if no edges are reachable return true
@@ -269,16 +269,5 @@ public class PrepareRoutingSubnetworks {
         }
 
         return true;
-    }
-
-    static class PrepEdgeFilter extends DefaultEdgeFilter {
-
-        public PrepEdgeFilter(FlagEncoder encoder) {
-            super(encoder.getAccessEnc(), true, true);
-        }
-
-        public BooleanEncodedValue getAccessEnc() {
-            return accessEnc;
-        }
     }
 }

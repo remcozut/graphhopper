@@ -18,11 +18,16 @@
 package com.graphhopper.util;
 
 import com.graphhopper.PathWrapper;
+import com.graphhopper.routing.InstructionsFromEdges;
 import com.graphhopper.routing.InstructionsHelper;
 import com.graphhopper.routing.Path;
 import com.graphhopper.routing.profiles.BooleanEncodedValue;
+import com.graphhopper.routing.profiles.Roundabout;
 import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.routing.weighting.Weighting;
+import com.graphhopper.storage.Graph;
 import com.graphhopper.util.details.PathDetailsBuilderFactory;
+import com.graphhopper.util.details.PathDetailsFromEdges;
 import com.graphhopper.util.exceptions.ConnectionNotFoundException;
 import org.locationtech.jts.io.WKTWriter;
 import org.slf4j.Logger;
@@ -50,6 +55,9 @@ import static com.graphhopper.util.Helper.MIN_INSTRUCTION_DISTANCE_THRESHOLD;
 public class PathMerger {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final Graph graph;
+    private final Weighting weighting;
+
     private static final DouglasPeucker DP = new DouglasPeucker();
     private boolean enableInstructions = true;
     private int versionCode = 0;
@@ -60,6 +68,11 @@ public class PathMerger {
     private PathDetailsBuilderFactory pathBuilderFactory;
     private List<String> requestedPathDetails = Collections.EMPTY_LIST;
     private double favoredHeading = Double.NaN;
+
+    public PathMerger(Graph graph, Weighting weighting) {
+        this.graph = graph;
+        this.weighting = weighting;
+    }
 
     public PathMerger setCalcPoints(boolean calcPoints) {
         this.calcPoints = calcPoints;
@@ -107,7 +120,7 @@ public class PathMerger {
         InstructionList fullInstructions = new InstructionList(tr);
         PointList fullPoints = PointList.EMPTY;
         List<String> description = new ArrayList<>();
-        BooleanEncodedValue roundaboutEnc = encodingManager.getBooleanEncodedValue(EncodingManager.ROUNDABOUT);
+        BooleanEncodedValue roundaboutEnc = encodingManager.getBooleanEncodedValue(Roundabout.KEY);
         for (int pathIndex = 0; pathIndex < paths.size(); pathIndex++) {
             Path path = paths.get(pathIndex);
             if (!path.isFound()) {
@@ -119,7 +132,7 @@ public class PathMerger {
             fullDistance += path.getDistance();
             fullWeight += path.getWeight();
             if (enableInstructions) {
-                InstructionList il = path.calcInstructions(roundaboutEnc, tr, enableFiltering, versionCode);
+                InstructionList il = InstructionsFromEdges.calcInstructions(path, graph, weighting, roundaboutEnc, tr, enableFiltering, versionCode);
                 if (!il.isEmpty()) {
                     fullInstructions.addAll(il);
 
@@ -127,7 +140,8 @@ public class PathMerger {
                     if (pathIndex + 1 < paths.size()) {
                         ViaInstruction newInstr = new ViaInstruction(fullInstructions.get(fullInstructions.size() - 1));
                         newInstr.setViaCount(pathIndex + 1);
-                        fullInstructions.replaceLast(newInstr);
+                        fullInstructions.set(fullInstructions.size() - 1, newInstr);
+
                     }
                 }
 
@@ -143,7 +157,7 @@ public class PathMerger {
                 }
 
                 fullPoints.add(tmpPoints);
-                altRsp.addPathDetails(path.calcDetails(requestedPathDetails, pathBuilderFactory, origPoints));
+                altRsp.addPathDetails(PathDetailsFromEdges.calcDetails(path, weighting, requestedPathDetails, pathBuilderFactory, origPoints));
                 origPoints = fullPoints.size();
             }
 

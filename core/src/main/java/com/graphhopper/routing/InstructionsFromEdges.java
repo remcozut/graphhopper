@@ -90,22 +90,22 @@ public class InstructionsFromEdges implements Path.EdgeVisitor {
     private TurnType turnType;
 
     private boolean filtering = true;
+    private final int MAX_U_TURN_DISTANCE = 35;
 
-
-    public InstructionsFromEdges(int tmpNode, Graph graph, Weighting weighting, FlagEncoder encoder,
-                                 BooleanEncodedValue roundaboutEnc, NodeAccess nodeAccess,
+    public InstructionsFromEdges(Graph graph, Weighting weighting,
+                                 BooleanEncodedValue roundaboutEnc,
                                  Translation tr, boolean filtering, int versionCode, InstructionList ways) {
         this.weighting = weighting;
-        this.encoder = encoder;
+        this.encoder = weighting.getFlagEncoder();
         this.accessEnc = encoder.getAccessEnc();
         this.roundaboutEnc = roundaboutEnc;
-        this.nodeAccess = nodeAccess;
+        this.nodeAccess = graph.getNodeAccess();
         this.filtering = filtering;
         this.versionCode = versionCode;
         this.tr = tr;
         this.ways = ways;
-        prevLat = this.nodeAccess.getLatitude(tmpNode);
-        prevLon = this.nodeAccess.getLongitude(tmpNode);
+//        prevLat = this.nodeAccess.getLatitude(tmpNode);
+//        prevLon = this.nodeAccess.getLongitude(tmpNode);
         prevNode = -1;
         prevInRoundabout = false;
         prevName = null;
@@ -114,10 +114,33 @@ public class InstructionsFromEdges implements Path.EdgeVisitor {
         allEdgeExplorer = graph.createEdgeExplorer(EdgeFilter.ALL_EDGES);
     }
 
+    public static InstructionList calcInstructions(Path path, Graph graph, Weighting weighting, BooleanEncodedValue roundaboutEnc, final Translation tr) {
+        return calcInstructions(path, graph, weighting, roundaboutEnc, tr, true, 2);
+    }
+    /**
+     * @return the list of instructions for this path.
+     */
+    public static InstructionList calcInstructions(Path path, Graph graph, Weighting weighting, BooleanEncodedValue roundaboutEnc, final Translation tr, boolean filtering, int versionCode) {
+        final InstructionList ways = new InstructionList(tr);
+        if (path.isFound()) {
+            if (path.getSize() == 0) {
+                ways.add(new FinishInstruction(graph.getNodeAccess(), path.getEndNode()));
+            } else {
+                path.forEveryEdge(new InstructionsFromEdges(graph, weighting, roundaboutEnc, tr, filtering, versionCode, ways));
+            }
+        }
+        return ways;
+    }
 
 
     @Override
     public void next(EdgeIteratorState edge, int index, int prevEdgeId) {
+
+        if (prevNode == -1) {
+            prevLat = this.nodeAccess.getLatitude(edge.getBaseNode());
+            prevLon = this.nodeAccess.getLongitude(edge.getBaseNode());
+        }
+
         // baseNode is the current node and adjNode is the next
         int adjNode = edge.getAdjNode();
         int baseNode = edge.getBaseNode();
@@ -344,7 +367,7 @@ public class InstructionsFromEdges implements Path.EdgeVisitor {
                 boolean isUTurn = false;
                 int uTurnType = Instruction.U_TURN_LEFT;
                 if (!Double.isNaN(prevInstructionPrevOrientation)
-                        && prevInstruction.getDistance() < encoder.getMaxUturnDistance()
+                        && prevInstruction.getDistance() < MAX_U_TURN_DISTANCE
                         && (sign < 0) == (prevInstruction.getSign() < 0)
                         && (Math.abs(sign) == Instruction.SLIGHT_RIGHT || Math.abs(sign) == Instruction.RIGHT || Math.abs(sign) == Instruction.SHARP_RIGHT)
                         && (Math.abs(prevInstruction.getSign()) == Instruction.SLIGHT_RIGHT || Math.abs(prevInstruction.getSign()) == Instruction.RIGHT || Math.abs(prevInstruction.getSign()) == Instruction.SHARP_RIGHT)

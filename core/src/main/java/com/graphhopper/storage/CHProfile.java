@@ -12,6 +12,7 @@ import java.util.Objects;
 
 import static com.graphhopper.routing.weighting.TurnWeighting.INFINITE_U_TURN_COSTS;
 
+
 /**
  * Specifies all properties of a CH routing profile. Generally these properties cannot be changed after the CH
  * pre-processing is finished and are stored on disk along with the prepared graph data.

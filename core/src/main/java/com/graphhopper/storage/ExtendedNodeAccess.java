@@ -99,6 +99,16 @@ public class ExtendedNodeAccess implements NodeAccess {
     }
 
     @Override
+    public String getName(int nodeId) {
+        return null;
+    }
+
+    @Override
+    public void setName(int nodeId, String name) {
+
+    }
+
+    @Override
     public double getLat(int nodeId) {
         return getLatitude(nodeId);
     }

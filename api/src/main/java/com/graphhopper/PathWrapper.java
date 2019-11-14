@@ -45,6 +45,7 @@ public class PathWrapper {
     private PointList pointList = PointList.EMPTY;
     private int numChanges;
     private final List<Trip.Leg> legs = new ArrayList<>();
+    private final List<Integer> pointsOrder = new ArrayList<>(5);
     private Map<String, List<PathDetail>> pathDetails = new HashMap<>();
     private BigDecimal fare;
     private boolean impossible = false;
@@ -77,6 +78,16 @@ public class PathWrapper {
 
     public String getDebugInfo() {
         return debugInfo;
+    }
+
+    public PathWrapper setPointsOrder(List<Integer> list) {
+        pointsOrder.clear();
+        pointsOrder.addAll(list);
+        return this;
+    }
+
+    public List<Integer> getPointsOrder() {
+        return pointsOrder;
     }
 
     /**
