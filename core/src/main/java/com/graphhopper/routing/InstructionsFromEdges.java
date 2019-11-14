@@ -477,12 +477,14 @@ public class InstructionsFromEdges implements Path.EdgeVisitor {
                     int otherSign = InstructionsHelper.calculateSign(baseLatLon[0], baseLatLon[1], adjLat, adjLon, prevOrientation);
 
 
+/*
                     logger.info("\n latlon:" + String.valueOf(adjLat) + "," + String.valueOf(adjLon) +
 
                             "\n sign: " + sign +
                             "\n othersign: " + otherSign
 
                     );
+*/
 
                     if ((sign > 0 && otherSign < 0) || (sign < 0 && otherSign > 0)) {
                         return true;

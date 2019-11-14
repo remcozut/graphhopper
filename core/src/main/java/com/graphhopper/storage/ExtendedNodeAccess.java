@@ -83,6 +83,13 @@ public class ExtendedNodeAccess implements NodeAccess {
         return nodeAccess.getTurnCostIndex(nodeId);
     }
 
+    public String getName(int nodeId) {
+        if (isAdditionalNode(nodeId)){
+            return "";
+        }
+        return nodeAccess.getName(nodeId);
+    }
+
     @Override
     public void setNode(int nodeId, double lat, double lon) {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -98,14 +105,10 @@ public class ExtendedNodeAccess implements NodeAccess {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public String getName(int nodeId) {
-        return null;
-    }
 
     @Override
     public void setName(int nodeId, String name) {
-
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

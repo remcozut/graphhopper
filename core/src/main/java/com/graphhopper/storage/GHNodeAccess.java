@@ -108,15 +108,24 @@ class GHNodeAccess implements NodeAccess {
         }
     }
 
-    @Override
-    public String getName(int nodeId) {
-        return null;
+    public final void setName(int nodeId, String name) {
+
+        int nameIdxRef = (int)this.baseGraph.nodeNameIndex.put(name);
+
+        long tmp = (long) nodeId * baseGraph.nodeEntryBytes + baseGraph.N_NAME_IDX;
+
+        baseGraph.nodes.setInt(tmp, nameIdxRef);
     }
 
-    @Override
-    public void setName(int nodeId, String name) {
 
+    public final String getName(int nodeId) {
+
+        long tmp = (long) nodeId * baseGraph.nodeEntryBytes + baseGraph.N_NAME_IDX;
+        int nameIdxRef = baseGraph.nodes.getInt(tmp);
+        return this.baseGraph.nodeNameIndex.get(nameIdxRef);
     }
+
+
 
     @Override
     public final int getTurnCostIndex(int index) {

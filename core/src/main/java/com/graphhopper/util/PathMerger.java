@@ -202,6 +202,7 @@ public class PathMerger {
     public InstructionList postProcessInstructions(final InstructionList instructions, final Translation tr) {
         List<InstructionList> groupedInstructions = new ArrayList<>();
 
+/*
         StringBuilder sb = new StringBuilder("\nOriginal instructionlist:");
         for ( int i = 0; i < instructions.size(); i++) {
             sb.append(String.format("\n%s", instructions.get(i).toString()));
@@ -212,6 +213,7 @@ public class PathMerger {
         }
         logger.info(sb.toString());
 
+*/
 
         InstructionList cachedInstructions = new InstructionList(tr);
         Instruction instruction, prevInstruction = new Instruction(0);
@@ -291,6 +293,7 @@ public class PathMerger {
         }
 
 
+/*
         sb = new StringBuilder("\nMerged instructionlist:");
         for ( int i = 0; i < retVal.size(); i++) {
             sb.append(String.format("\n%s", retVal.get(i).toString()));
@@ -301,6 +304,7 @@ public class PathMerger {
         }
         logger.info(sb.toString());
 
+*/
 
         return retVal;
     }
@@ -395,7 +399,7 @@ public class PathMerger {
 
 
 
-        logger.info(String.format("\nGroup polyline:\n%s", (new WKTWriter()).write(polyline.toLineString(false))));
+//        logger.info(String.format("\nGroup polyline:\n%s", (new WKTWriter()).write(polyline.toLineString(false))));
 
         return polyline;
     }
@@ -467,6 +471,7 @@ public class PathMerger {
 
 //        merge = false;
 
+/*
         StringBuilder sb = new StringBuilder();
         for ( int i = 0; i < instrGroup.size(); i++) {
             sb.append(String.format("\n%s", instrGroup.get(i).toString()));
@@ -493,6 +498,7 @@ public class PathMerger {
         );
         logger.info(sb.toString());
 
+*/
 
         // we gaan de instructie vergelijken met de vereenvoudigde lijn met kenmerkende hoeken
         if (merge) {

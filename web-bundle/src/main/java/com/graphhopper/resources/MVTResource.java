@@ -60,12 +60,14 @@ public class MVTResource {
             @PathParam("y") int yInfo,
             @QueryParam(Parameters.DETAILS.PATH_DETAILS) List<String> pathDetails) {
 
+/*
         if (zInfo <= 9) {
             VectorTile.Tile.Builder mvtBuilder = VectorTile.Tile.newBuilder();
             return Response.fromResponse(Response.ok(mvtBuilder.build().toByteArray(), PBF).build())
                     .header("X-GH-Took", "0")
                     .build();
         }
+*/
 
         StopWatch totalSW = new StopWatch().start();
         Coordinate nw = num2deg(xInfo, yInfo, zInfo);
@@ -118,6 +120,7 @@ public class MVTResource {
                 edgeCounter.incrementAndGet();
                 Map<String, Object> map = new HashMap<>(2);
                 map.put("name", edge.getName());
+//                map.put(edge.getFlags())
                 for (String str : pathDetails) {
                     // how to indicate an erroneous parameter?
                     if (str.contains(",") || !encodingManager.hasEncodedValue(str))

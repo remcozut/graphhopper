@@ -395,6 +395,7 @@ class BaseGraph implements Graph {
         return "edges:" + nf(edgeCount) + "(" + edges.getCapacity() / Helper.MB + "MB), "
                 + "nodes:" + nf(getNodes()) + "(" + nodes.getCapacity() / Helper.MB + "MB), "
                 + "name:(" + nameIndex.getCapacity() / Helper.MB + "MB), "
+                + "nodeName:(" + nodeNameIndex.getCapacity() / Helper.MB + "MB), "
                 + "geo:" + nf(maxGeoRef) + "(" + wayGeometry.getCapacity() / Helper.MB + "MB), "
                 + "bounds:" + bounds;
     }
@@ -473,6 +474,9 @@ class BaseGraph implements Graph {
             wayGeometry.close();
         if (!nameIndex.isClosed())
             nameIndex.close();
+        if (!nodeNameIndex.isClosed()) {
+            nodeNameIndex.close();
+        }
         edges.close();
         nodes.close();
         if (supportsTurnCosts()) {
@@ -481,7 +485,7 @@ class BaseGraph implements Graph {
     }
 
     long getCapacity() {
-        return edges.getCapacity() + nodes.getCapacity() + nameIndex.getCapacity()
+        return edges.getCapacity() + nodes.getCapacity() + nameIndex.getCapacity() + nodeNameIndex.getCapacity()
                 + wayGeometry.getCapacity() + (supportsTurnCosts() ? turnCostExtension.getCapacity() : 0);
     }
 

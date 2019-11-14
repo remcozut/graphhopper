@@ -5,12 +5,12 @@ graphhopper:
   # datareader.file: d:\projects\java\graphhopper\data\2018.2T\fietsnetwerk.pbf
   # datareader.file: d:\geodata\OSM\2019.1\volendam.osm.pbf
   # graph.location: data\volendam-gh
-  datareader.file: d:\geodata\OSM\2019.1\amsterdam.osm.pbf
-  graph.location: data\amsterdam-gh
+  # datareader.file: d:\geodata\OSM\2019.1\amsterdam.osm.pbf
+  # graph.location: data\amsterdam-gh
   # datareader.file: d:\geodata\OSM\build\s113.osm.pbf
   # graph.location: data\s113-gh
-  # datareader.file: d:\geodata\OSM\2019.2\netherlands-latest.osm.pbf
-  # graph.location: data\netherlands-gh
+  datareader.file: d:\geodata\OSM\2019.2\netherlands-latest.osm.pbf
+  graph.location: data\netherlands-gh
   ##### Vehicles #####
 
 
@@ -21,20 +21,26 @@ graphhopper:
 
   # Enable turn restrictions for car or motorcycle.
   # graph.flag_encoders: car|turn_costs=true
-  graph.bytes_for_flags: 64
+#  graph.bytes_for_flags: 64
+
+  # Add additional information to every edge. Used for path details.
+  # If road_environment is added and elevation is enabled then also a tunnel and bridge interpolation is done, see #798.
+  # More options are: surface,max_width,max_height,max_weight,max_axle_load,max_length,hazmat,hazmat_water,toll,track_type
+  graph.encoded_values: road_class,road_class_link,road_environment,max_speed,road_access
+
+
   ##### Elevation #####
 
-
   # To populate your graph with elevation data use SRTM, default is noop (no elevation)
-  # graph.elevation.provider: srtm
+  graph.elevation.provider: srtm
 
 
   # default location for cache is /tmp/srtm
-  # graph.elevation.cache_dir: ./srtmprovider/
+  graph.elevation.cache_dir: ./srtmprovider/
 
 
   # If you have a slow disk or plenty of RAM change the default MMAP to:
-  # graph.elevation.dataaccess: RAM_STORE
+  graph.elevation.dataaccess: RAM_STORE
 
 
 
