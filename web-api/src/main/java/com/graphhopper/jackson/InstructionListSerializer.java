@@ -24,7 +24,6 @@ public class InstructionListSerializer extends JsonSerializer<InstructionList> {
             String text = instruction.getTurnDescription(instructions.getTranslation());
             if (Helper.isEmpty(text))
                 text = ia.getMessage();
-            instrJson.put("text", Helper.firstBig(text));
 
             if (instruction.getExtraInfoJSON().containsKey("crossing")) {
                 if (! Helper.isEmpty(text)) {
@@ -32,6 +31,9 @@ public class InstructionListSerializer extends JsonSerializer<InstructionList> {
                 }
                 text += instructions.getTranslation().tr("crossing");
             }
+
+            instrJson.put("text", Helper.firstBig(text));
+
             if (!ia.isEmpty()) {
                 instrJson.put("annotation_text", ia.getMessage());
                 instrJson.put("annotation_importance", ia.getImportance());
