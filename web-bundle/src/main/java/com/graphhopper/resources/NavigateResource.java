@@ -76,7 +76,7 @@ public class NavigateResource {
             @QueryParam("voice_instructions") @DefaultValue("true") boolean voiceInstructions,
             @QueryParam("banner_instructions") @DefaultValue("true") boolean bannerInstructions,
             @QueryParam("roundabout_exits") @DefaultValue("true") boolean roundaboutExits,
-            @QueryParam("voice_units") @DefaultValue("metric") String voiceUnits,
+//            @QueryParam("voice_units") @DefaultValue("metric") String voiceUnits,
             @QueryParam("overview") @DefaultValue("simplified") String overview,
             @QueryParam("geometries") @DefaultValue("polyline6") String geometries,
             @QueryParam("bearings") @DefaultValue("") String bearings,
@@ -101,8 +101,6 @@ public class NavigateResource {
             throw new IllegalArgumentException("Currently, you need to enable steps");
         if (!roundaboutExits)
             throw new IllegalArgumentException("Roundabout exits have to be enabled right now");
-        if (!voiceUnits.equals("metric"))
-            throw new IllegalArgumentException("Voice units only support metric right now");
         if (!voiceInstructions)
             throw new IllegalArgumentException("You need to enable voice instructions right now");
         if (!bannerInstructions)
