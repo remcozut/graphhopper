@@ -90,7 +90,7 @@ public class InstructionsFromEdges implements Path.EdgeVisitor {
     private TurnType turnType;
 
     private boolean filtering = true;
-    private final int MAX_U_TURN_DISTANCE = 35;
+    private final int MAX_U_TURN_DISTANCE = 10;
 
     public InstructionsFromEdges(Graph graph, Weighting weighting,
                                  BooleanEncodedValue roundaboutEnc,
@@ -206,6 +206,7 @@ public class InstructionsFromEdges implements Path.EdgeVisitor {
         {
             int sign = Instruction.STRAIGHT;
             prevInstruction = new Instruction(sign, TurnType.DEPART, name, annotation, new PointList(10, nodeAccess.is3D()));
+            prevInstruction.setForceKeep(true);
             prevInstruction.addNode(baseNode, new double[] { nodeAccess.getLatitude(baseNode), nodeAccess.getLongitude(baseNode)});
             if (isCrossing(baseNode, adjNode)) {
                 prevInstruction.setCrossing(true);

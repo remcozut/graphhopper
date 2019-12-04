@@ -7,8 +7,6 @@ graphhopper:
   # graph.location: data\volendam-gh
   # datareader.file: d:\geodata\OSM\2019.1\amsterdam.osm.pbf
   # graph.location: data\amsterdam-gh
-  # datareader.file: d:\geodata\OSM\build\s113.osm.pbf
-  # graph.location: data\s113-gh
   datareader.file: d:\geodata\OSM\2019.2\netherlands-latest.osm.pbf
   graph.location: data\netherlands-gh
   ##### Vehicles #####
@@ -16,8 +14,8 @@ graphhopper:
 
   # Possible options: car,foot,bike,bike2,mtb,racingbike,motorcycle (comma separated)
   # bike2 takes elevation data into account (like up-hill is slower than down-hill) and requires enabling graph.elevation.provider below
-  graph.flag_encoders: bike,ncnbike,mtb,racingbike,car
-  # graph.flag_encoders: bike
+  # graph.flag_encoders: bike,ncnbike,mtb,racingbike,car
+  graph.flag_encoders: bike
 
   # Enable turn restrictions for car or motorcycle.
   # graph.flag_encoders: car|turn_costs=true

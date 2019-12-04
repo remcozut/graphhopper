@@ -73,6 +73,8 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
     // This is the specific bicycle class
     private String classBicycleKey;
 
+    private final int CYCLEWAY_SPEED = 18;  // Make sure cycleway and path use same speed value, see #634
+
     protected BikeCommonFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts) {
         super(speedBits, speedFactor, maxTurnCosts);
 
@@ -87,7 +89,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
         restrictedValues.add("restricted");
         restrictedValues.add("military");
         restrictedValues.add("emergency");
-        restrictedValues.add("use_sidepath");
+//        restrictedValues.add("use_sidepath");
 
         intendedValues.add("yes");
         intendedValues.add("designated");
@@ -147,7 +149,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
         roadValues.add("tertiary_link");
 
         maxPossibleSpeed = 30;
-        final int CYCLEWAY_SPEED = 18;  // Make sure cycleway and path use same speed value, see #634
+
 
         setTrackTypeSpeed("grade1", CYCLEWAY_SPEED); // paved
         setTrackTypeSpeed("grade2", 12); // now unpaved ...
@@ -277,7 +279,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
 
             if (!accept.canSkip()) {
                 if (way.hasTag(restrictions, restrictedValues) && !getConditionalTagInspector().isRestrictedWayConditionallyPermitted(way))
-                    return EncodingManager.Access.RESTRICTED;
+                    return EncodingManager.Access.CAN_SKIP;
                 return accept;
             }
 
@@ -317,8 +319,11 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
             return EncodingManager.Access.CAN_SKIP;
 
         // check access restrictions
-        if (way.hasTag(restrictions, restrictedValues) && !getConditionalTagInspector().isRestrictedWayConditionallyPermitted(way))
-            return EncodingManager.Access.RESTRICTED;
+        // RZU wil dit hebben als RESTRICTED maar dan is routeren op bicycle = no toegestaan
+        if (way.hasTag(restrictions, restrictedValues) && !getConditionalTagInspector().isRestrictedWayConditionallyPermitted(way)) {
+            return EncodingManager.Access.CAN_SKIP;
+        }
+
 
         if (getConditionalTagInspector().isPermittedWayConditionallyRestricted(way))
             return EncodingManager.Access.CAN_SKIP;
@@ -409,7 +414,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
         // Under certain conditions we need to increase the speed of pushing sections to the speed of a "highway=cycleway"
         if (way.hasTag("highway", pushingSectionsHighways)
                 && ((way.hasTag("foot", "yes") && way.hasTag("segregated", "yes"))
-                || way.hasTag("bicycle", "designated") || way.hasTag("bicycle", "official")))
+                || way.hasTag("bicycle", "designated") || way.hasTag("bicycle", "official") /* RZU als je er wel mag fietsen */ || way.hasTag("bicycle", "yes")))
             highwaySpeed = getHighwaySpeed("cycleway");
 
         String s = way.getTag("surface");
@@ -455,7 +460,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
                     speed = PUSHING_SECTION_SPEED / 2;
                 else
                     speed = PUSHING_SECTION_SPEED;
-            } else if (way.hasTag("bicycle", "designated") || way.hasTag("bicycle", "official")) {
+            } else if (way.hasTag("bicycle", "designated") || way.hasTag("bicycle", "official") /* RZU als je er wel mag fietsen */ || way.hasTag("bicycle", "yes")) {
                 // Here we handle the cases where the OSM tagging results in something similar to "highway=cycleway"
                 speed = highwaySpeeds.get("cycleway");
             } else {
@@ -700,7 +705,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
                 || way.hasTag("oneway:bicycle", oneways)
                 || way.hasTag("vehicle:backward")
                 || way.hasTag("vehicle:forward")
-                || way.hasTag("bicycle:forward");
+                || way.hasTag("bicycle:forward") && (way.hasTag("bicycle:forward", "yes") || way.hasTag("bicycle:forward", "no"));
 
         if ((isOneway || roundaboutEnc.getBool(false, edgeFlags))
                 && !way.hasTag("oneway:bicycle", "no")

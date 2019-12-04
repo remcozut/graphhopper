@@ -225,6 +225,11 @@ public class PathMerger {
         for (int i = 0; i < instructions.size(); i++) {
             instruction = instructions.get(i);
 
+            if (instruction.getTurnType() == TurnType.ARRIVE || instruction.getTurnType() == TurnType.DEPART) {
+                    // RZU deze instructie ten alle tijden behouden
+                instruction.setForceKeep(true);
+            }
+
             if (i == 0) {
                 instruction.setExtraInfo("groupIdx", groupIdx++);
                 cachedInstructions.add(instruction);
