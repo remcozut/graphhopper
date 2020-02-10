@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * @author Peter Karich
  */
-@Path("info")
+@Path("service/info")
 @Produces(MediaType.APPLICATION_JSON)
 public class InfoResource {
     private final GraphHopperStorage storage;

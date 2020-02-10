@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
  * @author svantulden
  * @author Michael Zilske
  */
-@Path("nearest")
+@Path("service/nearest")
 @Produces(MediaType.APPLICATION_JSON)
 public class NearestResource {
 

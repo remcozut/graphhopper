@@ -154,7 +154,7 @@ GHRequest.prototype.createGeocodeURL = function (host, prevIndex) {
     if (host)
         tmpHost = host;
 
-    var path = this.createPath(tmpHost + "/geocode?limit=6&type=" + this.dataType);
+    var path = this.createPath(tmpHost + "/service/geocode?limit=6&type=" + this.dataType);
     if (prevIndex >= 0 && prevIndex < this.route.size()) {
         var point = this.route.getIndex(prevIndex);
         if (point.isResolved()) {
@@ -183,7 +183,7 @@ GHRequest.prototype.createNavigationURL = function() {
         pointParam += point.lng + "," + point.lat;
     }
 
-    return this.createPath(this.host + "/service/directions/v5/mapbox/cycling/" + pointParam + "?access_token=pk.eyJ1IjoiemFybWFjIiwiYSI6ImNpb21rZ2psZjAwMGl3OGx4MXJxYm4ybW8ifQ.7OekPglcu-rmSGBwsPV6Xw&geometries=polyline6&overview=full&steps=true&continue_straight=true" +
+    return this.createPath(this.host + "/service/navigate/directions/v5/mapbox/cycling/" + pointParam + "?access_token=pk.eyJ1IjoiemFybWFjIiwiYSI6ImNpb21rZ2psZjAwMGl3OGx4MXJxYm4ybW8ifQ.7OekPglcu-rmSGBwsPV6Xw&geometries=polyline6&overview=full&steps=true&continue_straight=true" +
         "&annotations=congestion%2Cdistance&language=nl&roundabout_exits=true&voice_instructions=true&banner_instructions=true&voice_units=metric&enable_refresh=true");
 };
 

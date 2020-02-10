@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-@Path("isochrone")
+@Path("service/isochrone")
 public class IsochroneResource {
 
     private static final Logger logger = LoggerFactory.getLogger(IsochroneResource.class);

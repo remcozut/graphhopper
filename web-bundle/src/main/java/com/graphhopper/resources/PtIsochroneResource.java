@@ -47,7 +47,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 
-@Path("isochrone")
+@Path("service/isochrone")
 public class PtIsochroneResource {
 
     private static final double JTS_TOLERANCE = 0.00001;

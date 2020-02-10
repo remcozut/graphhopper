@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Path("mvt")
+@Path("service/mvt")
 public class MVTResource {
 
     private static final Logger logger = LoggerFactory.getLogger(MVTResource.class);

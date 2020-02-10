@@ -53,7 +53,7 @@ import static com.graphhopper.util.Parameters.Routing.*;
  *
  * @author Peter Karich
  */
-@Path("route")
+@Path("service/route")
 public class RouteResource {
 
     private static final Logger logger = LoggerFactory.getLogger(RouteResource.class);

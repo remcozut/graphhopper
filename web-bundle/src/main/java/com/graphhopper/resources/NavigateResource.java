@@ -50,7 +50,7 @@ import static com.graphhopper.util.Parameters.Routing.*;
  *
  * @author Robin Boldt
  */
-@Path("navigate/directions/v5/mapbox")
+@Path("service/navigate/directions/v5/mapbox")
 public class NavigateResource {
 
     private static final Logger logger = LoggerFactory.getLogger(NavigateResource.class);
@@ -187,7 +187,7 @@ public class NavigateResource {
     private List<GHPoint> getPointsFromRequest(HttpServletRequest httpServletRequest, String profile) {
 
         String url = httpServletRequest.getRequestURI();
-        url = url.replaceFirst("/navigate/directions/v5/mapbox/" + profile + "/", "");
+        url = url.replaceFirst("/service/navigate/directions/v5/mapbox/" + profile + "/", "");
         url = url.replace(".json", "");
         url = url.replaceAll("\\?[*]]", "");
 

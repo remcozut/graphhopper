@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * @author Peter Karich
  */
-@Path("i18n")
+@Path("service/i18n")
 @Produces(MediaType.APPLICATION_JSON)
 public class I18NResource {
 
