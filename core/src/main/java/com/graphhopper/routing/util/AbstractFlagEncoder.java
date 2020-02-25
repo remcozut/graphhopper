@@ -58,8 +58,6 @@ public abstract class AbstractFlagEncoder implements FlagEncoder {
     protected BooleanEncodedValue roundaboutEnc;
     protected DecimalEncodedValue avgSpeedEnc;
     protected IntEncodedValue wayTypeEncoder;
-
-
     protected IntEncodedValue nodeReferenceEnc;
 
     protected final Set<String> nodeNameReferences = new HashSet<>(5);

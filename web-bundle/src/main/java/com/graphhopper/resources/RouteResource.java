@@ -22,14 +22,11 @@ import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopperAPI;
 import com.graphhopper.MultiException;
 import com.graphhopper.http.WebHelper;
-import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.HintsMap;
 import com.graphhopper.util.Constants;
-import com.graphhopper.util.Helper;
 import com.graphhopper.util.Parameters;
 import com.graphhopper.util.StopWatch;
 import com.graphhopper.util.shapes.GHPoint;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +76,7 @@ public class RouteResource {
             @QueryParam(INSTRUCTIONS) @DefaultValue("true") boolean instructions,
             @QueryParam(CALC_POINTS) @DefaultValue("true") boolean calcPoints,
             @QueryParam("elevation") @DefaultValue("false") boolean enableElevation,
-            @QueryParam("filtering") @DefaultValue("true") boolean enableFiltering,
+            @QueryParam("filtering") @DefaultValue("true") boolean enableInstructionFiltering,
             @QueryParam(VERSIONCODE) @DefaultValue("-1") int versionCode,
             @QueryParam("points_encoded") @DefaultValue("true") boolean pointsEncoded,
             @QueryParam("vehicle") @DefaultValue("bike") String vehicleStr,
@@ -132,12 +129,11 @@ public class RouteResource {
             versionCode = Constants.VERSIONCODE;
         }
 
-
         initHints(request.getHints(), uriInfo.getQueryParameters());
         request.setVehicle(vehicleStr).
                 setWeighting(weighting).
                 setAlgorithm(algoStr).
-                setFiltering(enableFiltering).
+                setInstructionFiltering(enableInstructionFiltering).
                 setVersionCode(versionCode).
                 setLocale(localeStr).
                 setPointHints(pointHints).

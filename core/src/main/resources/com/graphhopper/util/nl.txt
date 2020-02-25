@@ -64,6 +64,7 @@ way=weg
 small_way=voetpad
 paved=verhard
 unpaved=onverhard
+ferry=veerpont
 stopover=marker %1$s
 roundabout_enter=ga de rotonde op
 roundabout_exit=neem afslag %1$s op de rotonde 

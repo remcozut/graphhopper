@@ -394,6 +394,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
             handleSpeed(edgeFlags, way, ferrySpeed);
             accessEnc.setBool(false, edgeFlags, true);
             accessEnc.setBool(true, edgeFlags, true);
+            wayTypeEncoder.setInt(false, edgeFlags, WayType.FERRY.ordinal());
         }
         int priorityFromRelation = 0;
         if (relationFlags != 0)
@@ -510,7 +511,11 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
                 break;
             case 3:
                 wayTypeName = tr.tr("way");
-                break;        }
+                break;
+            case 4:
+                wayTypeName = tr.tr("ferry");
+                break;
+        }
 
         if (pavementName.isEmpty()) {
 /*            if (wayType == 3 || wayType == 1)
@@ -685,7 +690,6 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
         } else if (way.hasTag(cyclewayTags, intendedValues)) {
             wayType = WayType.CYCLEWAY;
         }
-
         if (wayType == WayType.ROAD && way.hasTag(restrictions, restrictedValues)) {
             wayType = WayType.NOT_ALLOWED;
         }

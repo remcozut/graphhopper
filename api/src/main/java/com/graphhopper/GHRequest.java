@@ -44,7 +44,7 @@ public class GHRequest {
     private List<String> pathDetails = new ArrayList<>();
     private String algo = "";
 
-    private boolean filtering = true;
+    private boolean instructionFiltering = true;
     private boolean possibleToAdd = false;
     private Locale locale = Locale.US;
 
@@ -241,12 +241,12 @@ public class GHRequest {
     }
 
 
-    public boolean isFiltering() {
-        return filtering;
+    public boolean isInstructionFiltering() {
+        return instructionFiltering;
     }
 
-    public GHRequest setFiltering(boolean filtering) {
-        this.filtering = filtering;
+    public GHRequest setInstructionFiltering(boolean filtering) {
+        this.instructionFiltering = filtering;
         return this;
     }
 

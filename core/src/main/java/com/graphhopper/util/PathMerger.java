@@ -29,7 +29,6 @@ import com.graphhopper.storage.Graph;
 import com.graphhopper.util.details.PathDetailsBuilderFactory;
 import com.graphhopper.util.details.PathDetailsFromEdges;
 import com.graphhopper.util.exceptions.ConnectionNotFoundException;
-import org.locationtech.jts.io.WKTWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +61,7 @@ public class PathMerger {
     private boolean enableInstructions = true;
     private int versionCode = 0;
     private boolean simplifyResponse = true;
-    private boolean enableFiltering = true;
+    private boolean enableInstructionFiltering = true;
     private DouglasPeucker douglasPeucker = DP;
     private boolean calcPoints = true;
     private PathDetailsBuilderFactory pathBuilderFactory;
@@ -105,8 +104,8 @@ public class PathMerger {
         return this;
     }
 
-    public PathMerger setEnableFiltering(boolean enableFiltering) {
-        this.enableFiltering = enableFiltering;
+    public PathMerger setEnableInstructionFiltering(boolean enableFiltering) {
+        this.enableInstructionFiltering = enableFiltering;
         return this;
     }
 
@@ -132,7 +131,7 @@ public class PathMerger {
             fullDistance += path.getDistance();
             fullWeight += path.getWeight();
             if (enableInstructions) {
-                InstructionList il = InstructionsFromEdges.calcInstructions(path, graph, weighting, roundaboutEnc, tr, enableFiltering, versionCode);
+                InstructionList il = InstructionsFromEdges.calcInstructions(path, graph, weighting, roundaboutEnc, tr, enableInstructionFiltering, versionCode);
                 if (!il.isEmpty()) {
                     fullInstructions.addAll(il);
 
@@ -259,7 +258,7 @@ public class PathMerger {
                 /*
                 *  Merge instructions when going Straight but not further than MAX_MERGE_STRAIGHT_DISTANCE
                 * */
-                if (enableFiltering && !instruction.isForceKeep() && prevInstruction.getDistance() < Helper.MAX_MERGE_STRAIGHT_DISTANCE) {
+                if (enableInstructionFiltering && !instruction.isForceKeep() && prevInstruction.getDistance() < Helper.MAX_MERGE_STRAIGHT_DISTANCE) {
                     prevInstruction = cachedInstructions.mergeLast(instruction);
 
                 } else {
@@ -419,7 +418,7 @@ public class PathMerger {
 
         final InstructionList instrGroup = groupedInstructions.get(index);
 
-        if (! enableFiltering) {
+        if (!enableInstructionFiltering) {
             return;
         }
 

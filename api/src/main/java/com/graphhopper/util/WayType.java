@@ -5,5 +5,6 @@ public enum WayType {
     OTHER_SMALL_WAY, //1
     CYCLEWAY, //2
     ROAD, //3
-    NOT_ALLOWED; //4
+    FERRY,//4
+    NOT_ALLOWED; //5
 }

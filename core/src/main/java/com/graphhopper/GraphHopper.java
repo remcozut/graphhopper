@@ -1130,7 +1130,7 @@ public class GraphHopper implements GraphHopperAPI {
 
                 boolean tmpEnableInstructions = hints.getBool(Routing.INSTRUCTIONS, getEncodingManager().isEnableInstructions());
                 int tmpVersionCode = hints.getVersionCode();
-                boolean tmpEnableFiltering = request.isFiltering();
+                boolean tmpEnableInstructionFiltering = request.isInstructionFiltering();
                 boolean tmpCalcPoints = hints.getBool(Routing.CALC_POINTS, calcPoints);
                 double wayPointMaxDistance = hints.getDouble(Routing.WAY_POINT_MAX_DISTANCE, 1d);
 
@@ -1140,7 +1140,7 @@ public class GraphHopper implements GraphHopperAPI {
                         setDouglasPeucker(peucker).
                         setEnableInstructions(tmpEnableInstructions).
                         setVersionCode(tmpVersionCode).
-                        setEnableFiltering(tmpEnableFiltering).
+                        setEnableInstructionFiltering(tmpEnableInstructionFiltering).
                         setPathDetailsBuilders(pathBuilderFactory, request.getPathDetails())
                        .setSimplifyResponse(simplifyResponse && wayPointMaxDistance > 0);
 

@@ -63,6 +63,7 @@ way=way
 small_way=small way
 paved=paved
 unpaved=unpaved
+ferry=ferry
 stopover=waypoint %1$s
 roundabout_enter=Enter roundabout
 roundabout_exit=At roundabout, take exit %1$s
