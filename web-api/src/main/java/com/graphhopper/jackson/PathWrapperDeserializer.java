@@ -85,6 +85,7 @@ public class PathWrapperDeserializer extends JsonDeserializer<PathWrapper> {
                 int viaCount = 1;
                 for (JsonNode jsonObj : instrArr) {
                     double instDist = jsonObj.get("distance").asDouble();
+                    double instWeight = jsonObj.get("weight").asDouble();
                     String text = turnDescription ? jsonObj.get("text").asText() : jsonObj.get("street_name").asText();
                     long instTime = jsonObj.get("time").asLong();
                     int sign = jsonObj.get("sign").asInt();
@@ -145,7 +146,7 @@ public class PathWrapperDeserializer extends JsonDeserializer<PathWrapper> {
                     if (turnDescription)
                         instr.setUseRawName();
 
-                    instr.setDistance(instDist).setTime(instTime);
+                    instr.setDistance(instDist).setTime(instTime).setWeight(instWeight);
                     il.add(instr);
                 }
                 pathWrapper.setInstructions(il);

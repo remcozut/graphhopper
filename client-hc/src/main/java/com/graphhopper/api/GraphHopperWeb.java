@@ -153,6 +153,7 @@ public class GraphHopperWeb implements GraphHopperAPI {
                     double instDist = jsonObj.get("distance").asDouble();
                     String text = turnDescription ? jsonObj.get("text").asText() : jsonObj.get("street_name").asText();
                     long instTime = jsonObj.get("time").asLong();
+                    double instWeight = jsonObj.get("weight").asDouble();
                     int sign = jsonObj.get("sign").asInt();
                     JsonNode iv = jsonObj.get("interval");
                     int from = iv.get(0).asInt();
@@ -211,7 +212,7 @@ public class GraphHopperWeb implements GraphHopperAPI {
                     if (turnDescription)
                         instr.setUseRawName();
 
-                    instr.setDistance(instDist).setTime(instTime);
+                    instr.setDistance(instDist).setTime(instTime).setWeight(instWeight);
                     il.add(instr);
                 }
                 pathWrapper.setInstructions(il);

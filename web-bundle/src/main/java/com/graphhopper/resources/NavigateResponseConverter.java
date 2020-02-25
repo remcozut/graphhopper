@@ -82,6 +82,7 @@ public class NavigateResponseConverter {
         ObjectNode legJson = legsJson.addObject();
         ArrayNode steps = legJson.putArray("steps");
 
+        double weight = 0;
         long time = 0;
         double distance = 0;
         boolean isFirstInstructionOfLeg = true;
@@ -90,14 +91,16 @@ public class NavigateResponseConverter {
             Instruction instruction = instructions.get(i);
             ObjectNode instructionJson = steps.addObject();
             putInstruction(instructions, i, locale, translationMap, navigateResponseConverterTranslationMap, instructionJson, isFirstInstructionOfLeg);
+            weight += instruction.getWeight();
             time += instruction.getTime();
             distance += instruction.getDistance();
             isFirstInstructionOfLeg = false;
             if (instruction.getSign() == Instruction.REACHED_VIA || instruction.getSign() == Instruction.FINISH) {
-                putLegInformation(legJson, path, routeNr, time, distance);
+                putLegInformation(legJson, path, routeNr, weight, time, distance);
                 isFirstInstructionOfLeg = true;
                 time = 0;
                 distance = 0;
+                weight = 0;
 
                 if (instruction.getSign() == Instruction.REACHED_VIA ) {
                     // Create new leg and steps after a via points
@@ -108,6 +111,7 @@ public class NavigateResponseConverter {
         }
 
 
+//        pathJson.put("mean_speed", Helper.round(3.6 * path.getDistance() / convertToSeconds(path.getTime()), 1));
         pathJson.put("weight_name", "routability");
         pathJson.put("weight", Helper.round(path.getRouteWeight(), 1));
         pathJson.put("duration", convertToSeconds(path.getTime()));
@@ -115,17 +119,16 @@ public class NavigateResponseConverter {
         pathJson.put("voiceLocale", locale.toLanguageTag());
     }
 
-    private static void putLegInformation(ObjectNode legJson, PathWrapper path, int i, long time, double distance) {
+    private static void putLegInformation(ObjectNode legJson, PathWrapper path, int i, double weight, long time, double distance) {
         // TODO: Improve path descriptions, so that every path has a description, not just alternative routes
         String summary;
         if (!path.getDescription().isEmpty())
             summary = String.join(",", path.getDescription());
         else
-            summary = "GraphHopper Route " + i;
+            summary = "Velomatic Route " + i;
         legJson.put("summary", summary);
-
-        // TODO there is no weight per instruction, let's use time
-        legJson.put("weight", convertToSeconds(time));
+//        legJson.put("mean_speed", Helper.round(3.6 * distance / convertToSeconds(time), 1));
+        legJson.put("weight", Helper.round(weight, 1));
         legJson.put("duration", convertToSeconds(time));
         legJson.put("distance", Helper.round(distance, 1));
     }

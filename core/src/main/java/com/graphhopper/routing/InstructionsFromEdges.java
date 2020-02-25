@@ -777,7 +777,10 @@ public class InstructionsFromEdges implements Path.EdgeVisitor {
             prevInstruction.getPoints().add(pl, i);
         }
         double newDist = edge.getDistance();
+
         prevInstruction.setDistance(newDist + prevInstruction.getDistance());
+        prevInstruction.setWeight(weighting.calcWeight(edge, false, EdgeIterator.NO_EDGE)
+                + prevInstruction.getWeight());
         prevInstruction.setTime(weighting.calcMillis(edge, false, EdgeIterator.NO_EDGE)
                 + prevInstruction.getTime());
 

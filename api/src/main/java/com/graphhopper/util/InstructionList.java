@@ -100,6 +100,8 @@ public class InstructionList extends AbstractList<Instruction> {
         }
 
         instruction.setDistance(instruction.getDistance() + instr.getDistance());
+        instruction.setTime(instruction.getTime() + instr.getTime());
+        instruction.setWeight(instruction.getWeight() + instr.getWeight());
 
         instruction.mergedPoints.add(instr.points);
         instruction.points.add(instr.points);
@@ -149,6 +151,8 @@ public class InstructionList extends AbstractList<Instruction> {
         }
 
         instruction.setDistance(instruction.getDistance() + instr.getDistance());
+        instruction.setTime(instruction.getTime() + instr.getTime());
+        instruction.setWeight(instruction.getWeight() + instr.getWeight());
 
         instruction.mergedPoints.add(instr.points);
         instruction.points.add(instr.points);

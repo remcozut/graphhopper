@@ -59,6 +59,7 @@ public class Instruction {
     protected TurnType turnType;
     protected String name;
     protected double distance;
+    protected double weight;
     protected long time;
     protected Map<Integer, double[]> nodes = new TreeMap<>();
     protected Map<String, Object> extraInfo = new HashMap<>(3);
@@ -229,6 +230,18 @@ public class Instruction {
     }
 
     /**
+     * Weight until the next instruction, in milliseconds
+     */
+    public double getWeight() {
+        return weight;
+    }
+
+    public Instruction setWeight(double weight) {
+        this.weight = weight;
+        return this;
+    }
+
+    /**
      * Latitude of the location where this instruction should take place.
      */
     double getFirstLat() {
@@ -303,6 +316,7 @@ public class Instruction {
         sb.append("name: ").append(name).append(", ");
         sb.append("distance: ").append(distance).append(", ");
         sb.append("time: ").append(time).append(", ");
+        sb.append("weight: ").append(weight).append(", ");
         sb.append("wkt: ").append((new WKTWriter()).write(points.toLineString(false))).append(" ");
 
         if (!extraInfo.isEmpty()) {
