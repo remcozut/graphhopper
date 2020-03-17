@@ -169,7 +169,16 @@ public class NavigateResponseConverter {
         instructionJson.put("wkt", (new WKTWriter()).write(pointList.toLineString(false)));
 //        instructionJson.put("geometry", WebHelper.convertPointListToString(pointList));
         // TODO: how about other modes?
-        instructionJson.put("mode", "driving");
+
+        if (instruction.getWayType() == WayType.FERRY) {
+            instructionJson.put("mode", "ferry");
+        } else if (instruction.getWayType() == WayType.CYCLEWAY) {
+            instructionJson.put("mode", "cycling");
+        } else if (instruction.getWayType() == WayType.PUSHING_SECTION) {
+            instructionJson.put("mode", "walking");
+        } else {
+            instructionJson.put("mode", "driving");
+        }
 
         putManeuver(instruction, instructionJson, locale, translationMap, isFirstInstructionOfLeg);
 
